@@ -38,6 +38,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { MicNone } from "@mui/icons-material";
 
 function WallCards(props) {
   const [age, setAge] = React.useState("");
@@ -88,12 +89,16 @@ function WallCards(props) {
   // }
 
   return (
-    <div className="relative" style={{border:'2px solid', borderColor:props.color}}>
+    <div
+      className="relative"
+      style={{ border: "2px solid", borderColor: props.color }}
+    >
       <Card
         sx={{
           minWidth: 220,
           minHeight: !props.short && 120,
           maxHeight: props.short && 105,
+          borderRadius: "0px",
           // backgroundColor: props.color,
         }}
         // sx={{
@@ -154,7 +159,7 @@ function WallCards(props) {
       </Card>
       <div
         style={{ backgroundColor: props.color }}
-        className="text-center font-bold z-10 pb-2 bg-red"
+        className="text-center w-full font-bold z-10 pb-2 bg-red"
       >
         <Divider className="mb-2" />
         {props.bottom || "View Detailed Report"}{" "}

@@ -123,7 +123,7 @@ function ManageCompanies(props) {
         {/* <span className="text-xs mr-1 opacity-50">
           <MdRefresh />
         </span> */}
-        <ToDoorSearch />
+        {/* <ToDoorSearch /> */}
         <div className="flex justify-between ">
           <div>
             <Typography variant="h4" className="font-bold">

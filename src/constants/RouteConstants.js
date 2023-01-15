@@ -15,4 +15,6 @@ export const RouteEnum = {
   LIST_OF_MEDICINES: "/list-of-medicines",
   LIST_OF_MEDICINES_INNER: "/list-of-medicines/azthral",
   MEDICINE_GROUPS: "/medicine-groups",
+  DISPENSER: "/dispenser",
+  PATIENT: "/patient",
 };

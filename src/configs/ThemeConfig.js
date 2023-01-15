@@ -128,6 +128,17 @@ export function customizeComponents(theme) {
           }),
         },
       },
+      MuiCssBaseline: {
+        styleOverrides: {
+          body: {
+            // color: "darkred",
+            backgroundColor: "#E3EBF3",
+            "& h1": {
+              color: "black",
+            },
+          },
+        },
+      },
       MuiSelect: {
         styleOverrides: {
           root: ({ theme, ownerState }) => ({

@@ -102,7 +102,6 @@ function Signup(props) {
         {/* <span className="text-xs mr-1 opacity-50">
           <MdRefresh />
         </span> */}
-        <ToDoorSearch />
         <div className="flex justify-between ">
           <div>
             <Typography variant="h4" className="font-bold">

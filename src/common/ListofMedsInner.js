@@ -303,7 +303,7 @@ export default function ListOfMedicines() {
         {/* <span className="text-xs mr-1 opacity-50">
           <MdRefresh />
         </span> */}
-        <ToDoorSearch />
+        {/* <ToDoorSearch /> */}
         <div className="flex justify-between ">
           <div>
             <Typography variant="h5" className="font-bold">

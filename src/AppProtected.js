@@ -7,6 +7,7 @@ import { configureRoutes } from "utils/RouteUtils";
 import { RouteEnum } from "constants/RouteConstants";
 import Box from '@mui/material/Box';
 import SideBar from "features/sideBar/SideBar";
+import ToDoorSearch from "common/ToDoorSearch";
 
 function AppProtected(props) {
   const islg = useMediaQuery(MediaQueryBreakpointEnum.lg);
@@ -20,14 +21,18 @@ function AppProtected(props) {
         <div className="flex ">
           <SideBar />
           <div className="w-full ">
-            <Box
-        className="p-8"
-        component=""
-        sx={{ flexGrow: 1, bgcolor: 'background.default', }}
-      >
-          <Suspense>{routes}</Suspense>
+            <ToDoorSearch />
 
-         </Box>
+            <Box
+              className="p-8"
+              component=""
+              sx={{
+                flexGrow: 1,
+                // bgcolor: 'background.default',
+              }}
+            >
+              <Suspense>{routes}</Suspense>
+            </Box>
           </div>
         </div>
       )}
@@ -81,6 +86,16 @@ const ROUTES = configureRoutes([
   {
     path: RouteEnum.MEDICINE_GROUPS,
     element: lazy(() => import("common/MedicineGroups")),
+  },
+
+  {
+    path: RouteEnum.DISPENSER,
+    element: lazy(() => import("features/personnelManager/Dispenser")),
+  },
+
+  {
+    path: RouteEnum.PATIENT,
+    element: lazy(() => import("features/personnelManager/Patient")),
   },
 
   {

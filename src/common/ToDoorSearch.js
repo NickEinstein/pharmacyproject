@@ -91,11 +91,11 @@ function ToDoorSearch(props) {
   // }
 
   return (
-    <div>
+    <div className="bg-[#F7FAFD] px-8 py-4 ">
       {/* <span className="text-xs mr-1 opacity-50">
           <MdRefresh />
         </span> */}
-      <div className="flex justify-between">
+      <div className="flex justify-between items-center">
         <TextField
           InputProps={{
             endAdornment: (
@@ -105,8 +105,8 @@ function ToDoorSearch(props) {
             ),
           }}
           variant="outlined"
-          style={{ backgroundColor: "#EBEBEB", border: "none" }}
-          className="w-[47%] mb-5 text-ssm"
+          style={{ backgroundColor: "#E3EBF3", border: "none" }}
+          className="w-[47%] text-ssm"
           placeholder={props.placeholder || "Search Company "}
         />
 
@@ -123,7 +123,7 @@ function ToDoorSearch(props) {
           </div>
         </div>
       </div>
-      <Divider className="mb-8" />
+      {/* <Divider className="mb-" /> */}
     </div>
   );
 }

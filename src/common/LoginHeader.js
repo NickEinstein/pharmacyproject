@@ -1,7 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 // import trustedBy1 from './images/Vector.png'
-import toDoorLogo from 'images/Ellipse 30.png'
+import toDoorLogo from "images/Ellipse 30.png";
+import logoz from "images/obiPharmLogo.svg";
 import trustedBy3 from '../images/Rectangle 78.png'
 // import trustedBy3 from './images/trustedBy-3.png'
 // import trustedBy4 from './images/trustedBy-4.png'
@@ -20,7 +21,7 @@ const LoginHeader = (prop) => {
         <div className="flex items-center">
           <div className="flex relative items-center">
             <img
-              src={toDoorLogo}
+              src={logoz}
               style={{ width: "70px" }}
               alt="softwork logo"
               className="cursor-pointer"
@@ -28,20 +29,18 @@ const LoginHeader = (prop) => {
             />
             <Typography
               variant="h4"
-              className="absolute font-bold"
+              // className="absolute font-bold"
               style={{ marginLeft: "16px", color: "white" }}
-            >
-              TO
-            </Typography>
+            ></Typography>
           </div>
           <div>
             <Typography
               variant="h4"
-              className="font-bold text-primary-main ml-1"
-              
-            //   style={{ color: "0C3BAA", marginLeft: "1px" }}
+              // className="font-bold text-primary-main ml-1"
+
+              //   style={{ color: "0C3BAA", marginLeft: "1px" }}
             >
-              -Door
+              Obi’s GP
             </Typography>
           </div>
         </div>
