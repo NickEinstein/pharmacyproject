@@ -99,6 +99,19 @@ const ROUTES = configureRoutes([
   },
 
   {
+    path: RouteEnum.PRESCRIBER,
+    element: lazy(() => import("features/personnelManager/Prescriber")),
+  },
+  {
+    path: RouteEnum.PRESCRIPTION,
+    element: lazy(() => import("features/Actions/Prescriptions")),
+  },
+  {
+    path: RouteEnum.DISPENSARY,
+    element: lazy(() => import("features/Actions/Dispensary")),
+  },
+
+  {
     path: RouteEnum.SALES_REPORT,
     element: lazy(() => import("features/manageRider/SalesReport.js")),
   },

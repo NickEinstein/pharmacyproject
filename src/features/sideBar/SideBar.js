@@ -16,13 +16,15 @@ import ListItemText from "@mui/material/ListItemText";
 import InboxIcon from "@mui/icons-material/MoveToInbox";
 import { BsPeople } from "react-icons/bs";
 import MailIcon from "@mui/icons-material/Mail";
-import message from "images/message.png";
-import messages from "images/messages.png";
-import companies from "images/lifebuoy.png";
-import dashboard from "images/category-2.png";
+import message from "images/sidebar/Vector-2.svg";
+import messages from "images/sidebar/Vector-3.svg";
+import companies from "images/sidebar/Vector-1.svg";
+import dashboard from "images/sidebar/Vector.svg";
 import trips from "images/routing.png";
 import rider from "images/profile-2user.png";
-import map from "images/map.png";
+
+
+import map from "images/sidebar/Vector-5.svg";
 import logouts from "images/logout.png";
 import LoginHeader from "common/LoginHeader";
 import { RouteEnum } from "constants/RouteConstants";
@@ -57,8 +59,21 @@ export default function PermanentDrawerLeft() {
 
     {
       name: "Personnel Manager",
-      d: '#',
+      d: "#",
       image: companies,
+      color: false,
+    },
+
+    {
+      name: "Prescriptions",
+      d: RouteEnum.PRESCRIPTION,
+      image: message,
+      color: false,
+    },
+    {
+      name: "Dispensary",
+      d: RouteEnum.DISPENSARY,
+      image: messages,
       color: false,
     },
     // {
@@ -126,6 +141,12 @@ export default function PermanentDrawerLeft() {
     {
       name: "patients",
       d: RouteEnum.PATIENT,
+      image: companies,
+      color: false,
+    },
+    {
+      name: "Prescribers",
+      d: RouteEnum.PRESCRIBER,
       image: companies,
       color: false,
     },

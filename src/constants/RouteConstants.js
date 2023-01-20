@@ -17,4 +17,7 @@ export const RouteEnum = {
   MEDICINE_GROUPS: "/medicine-groups",
   DISPENSER: "/dispenser",
   PATIENT: "/patient",
+  PRESCRIBER: "/prescriber",
+  PRESCRIPTION: "/prescription",
+  DISPENSARY:"/dispensary"
 };

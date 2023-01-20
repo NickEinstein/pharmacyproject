@@ -17,7 +17,7 @@ import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import moment from "moment";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-
+import AddIcon from "@mui/icons-material/Add";
 import Slide from "@mui/material/Slide";
 import { visuallyHidden } from "@mui/utils";
 import {
@@ -27,21 +27,24 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
   TextField,
 } from "@mui/material";
-import { Add } from "@mui/icons-material";
+import { Add, AddAPhoto } from "@mui/icons-material";
 import { del, get, post } from "services/fetch";
 import UserApi from "apis/UserApi";
 import { useSnackbar } from "notistack";
 // import { LoadingButton } from "@mui/lab";
 
-function createData(name, calories, fat, carbs,vitamins, protein) {
+function createData(name, calories, fat, carbs, protein) {
   return {
     name,
     calories,
     fat,
-    
-    vitamins,
+    carbs,
     protein,
   };
 }
@@ -83,32 +86,28 @@ const headCells = [
     id: "name",
     numeric: false,
     disablePadding: true,
-    label: "Provider Name",
+    label: "SSN",
   },
   {
     id: "calories",
     numeric: false,
     disablePadding: false,
-    label: "Degree",
+    label: "Patient",
   },
   {
     id: "fat",
     numeric: false,
     disablePadding: false,
-    label: "DEA Number",
+    label: "Diagnosis",
   },
-  // {
-  //   id: "carbs",
-  //   numeric: false,
-  //   disablePadding: false,
-  //   label: "No. Of Patients",
-  // },
+
   {
-    id: "vitamins",
+    id: "carbs",
     numeric: false,
     disablePadding: false,
-    label: "DEA Expiry Date",
+    label: "Prescription",
   },
+
   {
     id: "protein",
     numeric: true,
@@ -188,29 +187,69 @@ export default function ListOfMedicines() {
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [value, setValue] = React.useState(null);
   const [meds, setMeds] = React.useState([null]);
+  const [patients, setpatients] = React.useState([null]);
+  const [prescribers, setPrescribers] = React.useState([null]);
+  const [prescriptions, setPrescriptions] = React.useState([null]);
+  const [holdIdDispense, setholdIdDispense] = React.useState("");
+  const [volumeDispensed, setVolumeDispensed] = React.useState("");
+
+  const [holdPatientInfo, setHoldPatientInfo] = React.useState("");
+  const [holdPrescribedInfo, setHoldPrescribedInfo] = React.useState("");
+
+  const [openDispensedVolume, setOpenDispensedVolume] = React.useState(false);
+  
+
   const [formData, setFormdata] = React.useState({
-    
-    providerName: "string",
-    providerCredentials: "string",
-    degree: "string",
-    expiryDate: "2023-01-15T08:15:00.505Z",
-    deaNumber: "string",
-    deaNumberExpiryDate: "2023-01-15T08:15:00.505Z",
-    deaxNumber: "string",
-    noOfPatients: 0,
+    patientId: 0,
+    details: "string",
+    prescriberId: 1,
+    inventoryId: 0,
+    diagnosis: "string",
+    dateOfPrescription: "2023-01-20T04:17:13.631Z",
+    volumePrescribed: "string",
+    ssn: "string",
+    volumeDispensed: "string",
   });
 
- 
-
-  const rows = meds?.map((e) =>
-    createData(e?.providerName, e?.degree, e?.deaNumber,e?.deaNumberExpiryDate,  e?.id)
+  const rows = prescriptions?.map((e) =>
+    createData(e?.ssn, e?.patientId, e?.diagnosis, e?.inventoryId, e?.id)
   );
 
+  console.log(rows);
+  console.log(prescriptions);
+
   React.useEffect(() => {
-    getRidersUnderCompanyR();
+    getDispenseries()
+    getPrescribers();
+    getPatients();
+    getMedicatons();
+    getPrescription();
   }, []);
 
+  const handleChange = (e) => {
+    setFormdata({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+const showDispense = (patient)=>{
+    console.log(patient)
+    setholdIdDispense(patient)
+    setHoldPatientInfo(patients?.find((e) => e?.id == patient.calories));
+    // setHoldPrescribedInfo(
+    //   prescriptions?.filter((e) => e?.patientId == patient.calories)
+    // );
+    setOpen(true)
+
+}
+
+console.log(holdPatientInfo)
+console.log(holdPrescribedInfo);
   const onChange = (e, name) => {
+    console.log(e.target.name);
+    console.log(e.target.value);
+
     if (name) {
       console.log(name);
       console.log(e);
@@ -218,22 +257,18 @@ export default function ListOfMedicines() {
         ...formData,
         [name]: e,
       });
-    } else
-
-    {
-      if (e.target.name === 'noOfPatients'){
+    } else {
+      if (e.target.name === "noOfPatients") {
         setFormdata({
           ...formData,
-          [e.target.name]:  +e.target.value,
+          [e.target.name]: +e.target.value,
         });
-      }
-      else
-       setFormdata({
-         ...formData,
-         [e.target.name]: e.target.value,
-       });
+      } else
+        setFormdata({
+          ...formData,
+          [e.target.name]: e.target.value,
+        });
     }
-      
   };
 
   console.log(formData);
@@ -258,14 +293,46 @@ export default function ListOfMedicines() {
   const [createInventoryMuation, createInventoryMutationResult] =
     UserApi.useCreateInventoryMutation();
 
+    function getName(id){
+        let name = patients?.find((e)=>e?.id == id)
+        console.log(name);
+        
+
+        
+        return name?.patientName
+    }
+
+    function getPatientsPrescription(id) {
+        console.log(id);
+        console.log(prescriptions);
+        
+      let name = prescriptions?.filter((e) => e?.patientId == id);
+      console.log(name);
+      return name;
+    }
+
   const ridersUnderCompanyR = async (companyId) => {
+
+    let payload = {
+      patientId: holdPatientInfo?.id,
+      prescriptionId: holdPrescribedInfo?.id,
+      inventoryId: holdPrescribedInfo?.inventoryId,
+      dispenserId: 5,
+      diagnosis: holdPrescribedInfo?.diagnosis,
+      dateOfPrescription: holdPrescribedInfo?.dateOfPrescription,
+      dateDispensed: new Date(),
+      volumePrescribed: holdPrescribedInfo?.volumePrescribed,
+      ssn: holdPrescribedInfo?.ssn,
+      volumeDispensed: volumeDispensed,
+    };
+    console.log(formData);
     const res = await post({
-      endpoint: `Dispenser/create-dispenser`,
-      body: { ...formData },
+      endpoint: `dispensary/dispense`,
+      body: payload,
       // auth: true,
     });
 
-    getRidersUnderCompanyR();
+    // getPrescribers();
     // try {
     //   const data = await createInventoryMuation({ data: formData }).unwrap();
     //   // TODO extra login
@@ -276,16 +343,20 @@ export default function ListOfMedicines() {
     //     variant: "error",
     //   });
     // }
-    // console.log(res.data.data);
+    console.log(res.data.data);
+    // getDispensers();
+
     // return res.data.data.length;
   };
 
-  const getRidersUnderCompanyR = async (companyId) => {
+  const getMedicatons = async (companyId) => {
     const res = await get({
-      endpoint: `Dispenser/get-dispensers`,
+      endpoint: `inventory/get-inventories`,
       body: { ...formData },
       // auth: true,
     });
+
+    console.log(res.data.data);
     // try {
     //   const data = await createInventoryMuation({ data: formData }).unwrap();
     //   // TODO extra login
@@ -300,13 +371,94 @@ export default function ListOfMedicines() {
     // return res.data.data.length;
   };
 
+   const getDispenseries = async (companyId) => {
+     const res = await get({
+       endpoint: `dispensary/get-dispensaries`,
+       // auth: true,
+     });
+
+     console.log(res.data.data);
+     // try {
+     //   const data = await createInventoryMuation({ data: formData }).unwrap();
+     //   // TODO extra login
+     //   // redirect()
+     //   enqueueSnackbar("Logged in successful", { variant: "success" });
+     // } catch (error) {
+     //   enqueueSnackbar(error?.data?.message, "Failed to login", {
+     //     variant: "error",
+     //   });
+     // }
+    //  setMeds(res.data.data);
+     // return res.data.data.length;
+   };
+
+  const getPrescribers = async (companyId) => {
+    const res = await get({
+      endpoint: `prescriber/get-prescribers`,
+      body: { ...formData },
+      // auth: true,
+    });
+    // try {
+    //   const data = await createInventoryMuation({ data: formData }).unwrap();
+    //   // TODO extra login
+    //   // redirect()
+    //   enqueueSnackbar("Logged in successful", { variant: "success" });
+    // } catch (error) {
+    //   enqueueSnackbar(error?.data?.message, "Failed to login", {
+    //     variant: "error",
+    //   });
+    // }
+    setPrescribers(res.data.data);
+    // return res.data.data.length;
+  };
+
+  const getPrescription = async (companyId) => {
+    const res = await get({
+      endpoint: `prescription/get-prescriptions`,
+      //    body: { ...formData },
+      // auth: true,
+    });
+    // try {
+    //   const data = await createInventoryMuation({ data: formData }).unwrap();
+    //   // TODO extra login
+    //   // redirect()
+    //   enqueueSnackbar("Logged in successful", { variant: "success" });
+    // } catch (error) {
+    //   enqueueSnackbar(error?.data?.message, "Failed to login", {
+    //     variant: "error",
+    //   });
+    // }
+    //  console.Console.log(res.data.data)
+    setPrescriptions(res.data.data);
+    // return res.data.data.length;
+  };
+
+  const getPatients = async (companyId) => {
+    const res = await get({
+      endpoint: `patient/get-patients`,
+      // auth: true,
+    });
+    // try {
+    //   const data = await createInventoryMuation({ data: formData }).unwrap();
+    //   // TODO extra login
+    //   // redirect()
+    //   enqueueSnackbar("Logged in successful", { variant: "success" });
+    // } catch (error) {
+    //   enqueueSnackbar(error?.data?.message, "Failed to login", {
+    //     variant: "error",
+    //   });
+    // }
+    setpatients(res.data.data);
+    // return res.data.data.length;
+  };
+
   const deleteItem = async (id) => {
     const res = await del({
-      endpoint: `Dispenser/delete-dispenser?Id=${id}`,
+      endpoint: `prescriber/delete-prescribers?Id=${id}`,
       //  body: { ...formData },
       // auth: true,
     });
-    getRidersUnderCompanyR();
+    getPrescribers();
   };
 
   const handleClick = (event, name) => {
@@ -372,14 +524,11 @@ export default function ListOfMedicines() {
         <div className="flex justify-between ">
           <div>
             <Typography variant="h4" className="font-bold">
-              <span class="text-[#1D242E80]">Personnel Manager </span>&gt;
-              Dispenser
+              Dispensary
             </Typography>
-            <Typography variant="h6" className="">
-              List of Medical Personnels available
-            </Typography>
+            
           </div>
-          <div>
+          {/* <div>
             <Button
               onClick={handleClickOpen}
               style={{
@@ -390,9 +539,9 @@ export default function ListOfMedicines() {
               variant="contained"
               startIcon={<Add />}
             >
-              <Typography variant="h6">Add Dispenser</Typography>
+              <Typography variant="h6">Prescribe CS</Typography>
             </Button>
-          </div>
+          </div> */}
         </div>
       </div>
 
@@ -446,18 +595,25 @@ export default function ListOfMedicines() {
                         component="th"
                         id={labelId}
                         scope="row"
+                        className="cursor-pointer hover:text-blue-500"
                         // padding="none"
+                        onClick={() => {
+                          showDispense(row);
+                          getPatientsPrescription(row.calories);
+                        }}
                       >
                         {row.name}
                       </TableCell>
-                      <TableCell align="left">{row.calories}</TableCell>
-                      <TableCell align="left">{row.fat}</TableCell>
-                      {/* <TableCell align="left">{row.carbs}</TableCell> */}
-                      <TableCell align="left">{moment(row.vitamins).format('ll')}</TableCell>
+                      <TableCell align="left">
+                        {getName(row?.calories)}
+                      </TableCell>
+                      <TableCell align="left">{row?.fat}</TableCell>
+                      <TableCell align="left">{row?.carbs}</TableCell>
+
                       <TableCell align="right">
                         <DeleteIcon
                           className="cursor-pointer"
-                          onClick={() => deleteItem(row.protein)}
+                          onClick={() => deleteItem(row?.protein)}
                         />
                       </TableCell>
                     </TableRow>
@@ -505,107 +661,107 @@ export default function ListOfMedicines() {
         // sx={{width:"2000px", border:'2px solid red'}}
         // TransitionComponent={Transition}
       >
-        <DialogTitle>Add Dispenser</DialogTitle>
-        <DialogContent sx={{ width: "500px" }}>
+        <DialogTitle className="bg-[#283342] text-white">
+          Dispense CS
+        </DialogTitle>
+        <DialogContent sx={{ width: "700px" }}>
           {/* <DialogContentText>
             To subscribe to this website, please enter your email address here.
             We will send updates occasionally.
           </DialogContentText> */}
-          <Typography className="text-center">Enter Information</Typography>
-          <Typography
-            gutterBottom
-            variant="body2"
-            color="textSecondary"
-            className="text-center"
-          >
-            This will only take a few minutes
-          </Typography>
-          
-          {/* <Typography variant="h5" className="text-center">{formik?.values?.email_address}</Typography> */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4">
-            <TextField
-              onChange={onChange}
-              name="providerName"
-              required
-              margin="normal"
-              fullWidth
-              placeholder="Provider Name"
-            />
-            <TextField
-              onChange={onChange}
-              name="providerCredentials"
-              required
-              margin="normal"
-              fullWidth
-              placeholder="Provider Credentials"
-            />
-          </div>
-          <TextField
-            onChange={onChange}
-            required
-            margin="normal"
-            fullWidth
-            placeholder="Degree"
-            name="degree"
-          />
-          <>
-            <TextField
-              onChange={onChange}
-              required
-              //   type="number"
-              //   type="number"
-              margin="normal"
-              fullWidth
-              placeholder="DEA Number"
-              name="deaNumber"
-            />
-            {/* <TextField
-              onChange={onChange}
-              required
-              type="number"
-              margin="normal"
-              fullWidth
-              placeholder="No. Of Patients"
-              name="noOfPatients"
-            /> */}
-            {/* <TextField
-              onChange={onChange}
-              required
-              margin="normal"
-              //   type="number"
-              fullWidth
-              placeholder="DEAX Number"
-              name="deaxNumber"
-            /> */}
-            <div>
-              <LocalizationProvider dateAdapter={AdapterDateFns}>
-                <DatePicker
-                  name=""
-                  onChange={(e) => onChange(e, "deaNumberExpiryDate")}
-                  // label="Basic example"
-                  value={formData.deaNumberExpiryDate}
-                  //
-                  renderInput={(params) => <TextField {...params} />}
-                />
-              </LocalizationProvider>
-
-              <LocalizationProvider dateAdapter={AdapterDateFns}>
-                <DatePicker
-                  // name="expirationDate"
-                  // label="Basic example"
-                  value={formData.expiryDate}
-                  onChange={(e) => onChange(e, "expiryDate")}
-                  renderInput={(params) => <TextField {...params} />}
-                />
-              </LocalizationProvider>
+          <div className="flex justify-between my-3">
+            <div className="flex flex-col gap-2">
+              <div class="flex gap-6">
+                <Typography>Name:</Typography>
+                <Typography>{getName(holdIdDispense?.calories)}</Typography>
+              </div>
+              <div class="flex gap-6">
+                <Typography>DOB:</Typography>
+                <Typography>12/12/1909</Typography>
+              </div>
+              <div class="flex gap-6">
+                <Typography>Address:</Typography>
+                <Typography>JFK Lane, NYC </Typography>
+              </div>
             </div>
 
-           
-          </>
+            <div className="flex flex-col gap-2">
+              <div class="flex gap-6">
+                <Typography>Phone: </Typography>
+                <Typography>HallGP</Typography>
+              </div>
+              <div class="flex gap-6">
+                <Typography>Hosptal ID No: </Typography>
+                <Typography>DOB</Typography>
+              </div>
+
+              <Typography variant="h6">Emergency Contacts</Typography>
+              <div class="flex gap-6">
+                <Typography>Name</Typography>
+                <Typography>Mary Havey </Typography>
+              </div>
+              <div class="flex gap-6">
+                <Typography>Relationship: </Typography>
+                <Typography>Brother</Typography>
+              </div>
+              <div class="flex gap-6">
+                <Typography>Address</Typography>
+                <Typography>NYC</Typography>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <Typography variant="h5">Prescription History</Typography>
+            <div className="w-full flex justify-between mt-4">
+              <Typography variant="h6" className="w-full">
+                Diagnoses
+              </Typography>
+              <Typography variant="h6" className="w-full">
+                Patient
+              </Typography>
+              <Typography variant="h6" className="w-full">
+                Volume
+              </Typography>
+              <Typography variant="h6" className="w-full">
+                Date
+              </Typography>
+            </div>
+            {getPatientsPrescription(holdIdDispense?.calories)?.map((e) => (
+              <div className="flex justify-between p-2">
+                <Typography variant="" className="w-full">
+                  {e?.diagnosis}
+                </Typography>
+                <Typography variant="" className="w-full">
+                  {getName(e?.patientId)}
+                </Typography>
+                <Typography variant="" className="w-full">
+                  {e?.volumePrescribed}
+                </Typography>
+                <Typography variant="" className="w-full">
+                  {moment(e?.dateOfPrescription).format("ll")}
+                </Typography>
+
+                <Add
+                  className="w-[30px] cursor-pointer"
+                  onClick={() => {
+setOpenDispensedVolume(!openDispensedVolume);
+setHoldPrescribedInfo(e);
+                  }
+                    
+                    }
+                />
+              </div>
+            ))}
+          </div>
+
+          {openDispensedVolume && (
+            <TextField onChange={(e)=>setVolumeDispensed(+e.target.value)} name="volumeDispensed" />
+          )}
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={ridersUnderCompanyR}>Add</Button>
+          {volumeDispensed && <Button onClick={ridersUnderCompanyR}>Dispense</Button>}
         </DialogActions>
       </Dialog>
     </Box>

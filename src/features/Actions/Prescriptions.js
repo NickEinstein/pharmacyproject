@@ -27,6 +27,10 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
   TextField,
 } from "@mui/material";
 import { Add } from "@mui/icons-material";
@@ -35,13 +39,12 @@ import UserApi from "apis/UserApi";
 import { useSnackbar } from "notistack";
 // import { LoadingButton } from "@mui/lab";
 
-function createData(name, calories, fat, carbs,vitamins, protein) {
+function createData(name, calories, fat, carbs, protein) {
   return {
     name,
     calories,
     fat,
-    
-    vitamins,
+    carbs,
     protein,
   };
 }
@@ -83,32 +86,28 @@ const headCells = [
     id: "name",
     numeric: false,
     disablePadding: true,
-    label: "Provider Name",
+    label: "SSN",
   },
   {
     id: "calories",
     numeric: false,
     disablePadding: false,
-    label: "Degree",
+    label: "Patient",
   },
   {
     id: "fat",
     numeric: false,
     disablePadding: false,
-    label: "DEA Number",
+    label: "Diagnosis",
   },
-  // {
-  //   id: "carbs",
-  //   numeric: false,
-  //   disablePadding: false,
-  //   label: "No. Of Patients",
-  // },
+
   {
-    id: "vitamins",
+    id: "carbs",
     numeric: false,
     disablePadding: false,
-    label: "DEA Expiry Date",
+    label: "Prescription",
   },
+ 
   {
     id: "protein",
     numeric: true,
@@ -188,29 +187,57 @@ export default function ListOfMedicines() {
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [value, setValue] = React.useState(null);
   const [meds, setMeds] = React.useState([null]);
-  const [formData, setFormdata] = React.useState({
-    
-    providerName: "string",
-    providerCredentials: "string",
-    degree: "string",
-    expiryDate: "2023-01-15T08:15:00.505Z",
-    deaNumber: "string",
-    deaNumberExpiryDate: "2023-01-15T08:15:00.505Z",
-    deaxNumber: "string",
-    noOfPatients: 0,
-  });
+  const [patients, setpatients] = React.useState([null]);
+  const [prescribers, setPrescribers] = React.useState([null]);
+  const [prescriptions, setPrescriptions] = React.useState([null]);
+  const [age, setAge] = React.useState("");
 
  
+  const [formData, setFormdata] = React.useState({
+    patientId: 0,
+    details: "string",
+    prescriberId: 1,
+    inventoryId: 0,
+    diagnosis: "string",
+    dateOfPrescription: "2023-01-20T04:17:13.631Z",
+    volumePrescribed: "string",
+    ssn: "string",
+    volumeDispensed: "string",
+  });
 
-  const rows = meds?.map((e) =>
-    createData(e?.providerName, e?.degree, e?.deaNumber,e?.deaNumberExpiryDate,  e?.id)
+  const rows = prescriptions?.map((e) =>
+    createData(
+      e?.ssn,
+      e?.patientId,
+      e?.diagnosis,
+      e?.inventoryId,
+      e?.id
+    )
   );
 
+  console.log(rows);
+  console.log(prescriptions);
+  
+
   React.useEffect(() => {
-    getRidersUnderCompanyR();
+    getPrescribers();
+    getPatients()
+    getMedicatons()
+    getPrescription()
   }, []);
 
+   const handleChange = (e) => {
+    console.log(e.target.value);
+    setFormdata({
+          ...formData,
+          [e.target.name]: e.target.value,
+        });
+   };
+
   const onChange = (e, name) => {
+console.log(e.target.name)
+console.log(e.target.value);
+
     if (name) {
       console.log(name);
       console.log(e);
@@ -218,22 +245,18 @@ export default function ListOfMedicines() {
         ...formData,
         [name]: e,
       });
-    } else
-
-    {
-      if (e.target.name === 'noOfPatients'){
+    } else {
+      if (e.target.name === "noOfPatients") {
         setFormdata({
           ...formData,
-          [e.target.name]:  +e.target.value,
+          [e.target.name]: +e.target.value,
         });
-      }
-      else
-       setFormdata({
-         ...formData,
-         [e.target.name]: e.target.value,
-       });
+      } else
+        setFormdata({
+          ...formData,
+          [e.target.name]: e.target.value,
+        });
     }
-      
   };
 
   console.log(formData);
@@ -259,13 +282,14 @@ export default function ListOfMedicines() {
     UserApi.useCreateInventoryMutation();
 
   const ridersUnderCompanyR = async (companyId) => {
+    console.log(formData)
     const res = await post({
-      endpoint: `Dispenser/create-dispenser`,
+      endpoint: `prescription/prescribe`,
       body: { ...formData },
       // auth: true,
     });
 
-    getRidersUnderCompanyR();
+    // getPrescribers();
     // try {
     //   const data = await createInventoryMuation({ data: formData }).unwrap();
     //   // TODO extra login
@@ -276,16 +300,20 @@ export default function ListOfMedicines() {
     //     variant: "error",
     //   });
     // }
-    // console.log(res.data.data);
+    console.log(res.data.data);
+    getPrescription();
+
     // return res.data.data.length;
   };
 
-  const getRidersUnderCompanyR = async (companyId) => {
+  const getMedicatons = async (companyId) => {
     const res = await get({
-      endpoint: `Dispenser/get-dispensers`,
+      endpoint: `inventory/get-inventories`,
       body: { ...formData },
       // auth: true,
     });
+
+    console.log(res.data.data)
     // try {
     //   const data = await createInventoryMuation({ data: formData }).unwrap();
     //   // TODO extra login
@@ -300,13 +328,87 @@ export default function ListOfMedicines() {
     // return res.data.data.length;
   };
 
+  const getPrescribers = async (companyId) => {
+    const res = await get({
+      endpoint: `prescriber/get-prescribers`,
+      body: { ...formData },
+      // auth: true,
+    });
+    // try {
+    //   const data = await createInventoryMuation({ data: formData }).unwrap();
+    //   // TODO extra login
+    //   // redirect()
+    //   enqueueSnackbar("Logged in successful", { variant: "success" });
+    // } catch (error) {
+    //   enqueueSnackbar(error?.data?.message, "Failed to login", {
+    //     variant: "error",
+    //   });
+    // }
+    setPrescribers(res.data.data);
+    // return res.data.data.length;
+  };
+
+   const getPrescription = async (companyId) => {
+     const res = await get({
+       endpoint: `prescription/get-prescriptions`,
+    //    body: { ...formData },
+       // auth: true,
+     });
+     // try {
+     //   const data = await createInventoryMuation({ data: formData }).unwrap();
+     //   // TODO extra login
+     //   // redirect()
+     //   enqueueSnackbar("Logged in successful", { variant: "success" });
+     // } catch (error) {
+     //   enqueueSnackbar(error?.data?.message, "Failed to login", {
+     //     variant: "error",
+     //   });
+     // }
+    //  console.Console.log(res.data.data)
+     setPrescriptions(res.data.data);
+     // return res.data.data.length;
+   };
+
+   const getPatients = async (companyId) => {
+     const res = await get({
+       endpoint: `patient/get-patients`,
+       // auth: true,
+     });
+     // try {
+     //   const data = await createInventoryMuation({ data: formData }).unwrap();
+     //   // TODO extra login
+     //   // redirect()
+     //   enqueueSnackbar("Logged in successful", { variant: "success" });
+     // } catch (error) {
+     //   enqueueSnackbar(error?.data?.message, "Failed to login", {
+     //     variant: "error",
+     //   });
+     // }
+     setpatients(res.data.data);
+     // return res.data.data.length;
+   };
+
+   function getName(id) {
+     let name = patients?.find((e) => e?.id == id);
+     console.log(name);
+
+     return name?.patientName;
+   }
+
+    function getPrescribedDrugs(id) {
+      let name = meds?.find((e) => e?.id == id);
+      console.log(name);
+
+      return name?.csName;
+    }
+
   const deleteItem = async (id) => {
     const res = await del({
-      endpoint: `Dispenser/delete-dispenser?Id=${id}`,
+      endpoint: `prescription/delete-prescription?Id=${id}`,
       //  body: { ...formData },
       // auth: true,
     });
-    getRidersUnderCompanyR();
+    getPrescription();
   };
 
   const handleClick = (event, name) => {
@@ -372,12 +474,9 @@ export default function ListOfMedicines() {
         <div className="flex justify-between ">
           <div>
             <Typography variant="h4" className="font-bold">
-              <span class="text-[#1D242E80]">Personnel Manager </span>&gt;
-              Dispenser
+              Prescriptions
             </Typography>
-            <Typography variant="h6" className="">
-              List of Medical Personnels available
-            </Typography>
+           
           </div>
           <div>
             <Button
@@ -390,7 +489,7 @@ export default function ListOfMedicines() {
               variant="contained"
               startIcon={<Add />}
             >
-              <Typography variant="h6">Add Dispenser</Typography>
+              <Typography variant="h6">Prescribe CS</Typography>
             </Button>
           </div>
         </div>
@@ -450,10 +549,14 @@ export default function ListOfMedicines() {
                       >
                         {row.name}
                       </TableCell>
-                      <TableCell align="left">{row.calories}</TableCell>
+                      <TableCell align="left">
+                        {getName(row.calories)}
+                      </TableCell>
                       <TableCell align="left">{row.fat}</TableCell>
-                      {/* <TableCell align="left">{row.carbs}</TableCell> */}
-                      <TableCell align="left">{moment(row.vitamins).format('ll')}</TableCell>
+                      <TableCell align="left">
+                        {getPrescribedDrugs(row.carbs)}
+                      </TableCell>
+
                       <TableCell align="right">
                         <DeleteIcon
                           className="cursor-pointer"
@@ -505,7 +608,7 @@ export default function ListOfMedicines() {
         // sx={{width:"2000px", border:'2px solid red'}}
         // TransitionComponent={Transition}
       >
-        <DialogTitle>Add Dispenser</DialogTitle>
+        <DialogTitle>Prescribe CS</DialogTitle>
         <DialogContent sx={{ width: "500px" }}>
           {/* <DialogContentText>
             To subscribe to this website, please enter your email address here.
@@ -520,12 +623,57 @@ export default function ListOfMedicines() {
           >
             This will only take a few minutes
           </Typography>
-          
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4">
+            <Box sx={{ minWidth: 120 }}>
+              <FormControl fullWidth>
+                <InputLabel id="demo-simple-select-label">Patients</InputLabel>
+                <Select
+                  labelId="demo-simple-select-label"
+                  id="demo-simple-select"
+                  name="patientId"
+                  // value={age}
+                  label="Age"
+                  onChange={handleChange}
+                >
+                  {patients?.map((e) => (
+                    <MenuItem value={e?.id}>{e?.patientName}</MenuItem>
+                  ))}
+                  {/* <MenuItem value={20}>Twenty</MenuItem>
+                    <MenuItem value={30}>Thirty</MenuItem> */}
+                </Select>
+              </FormControl>
+            </Box>
+
+            <Box sx={{ minWidth: 120 }}>
+              <FormControl fullWidth>
+                <InputLabel id="demo-simple-select-label">
+                  CS Medication
+                </InputLabel>
+                <Select
+                  //   labelId="demo-simple-select-label"
+                  id="demo-simple-select"
+                  name="inventoryId"
+                  // value={age}
+                  label="Medication"
+                  onChange={handleChange}
+                >
+                  {meds?.map((e) => (
+                    <MenuItem value={e?.id}>{e?.csName}</MenuItem>
+                  ))}
+                  {/* <MenuItem value={20}>Twenty</MenuItem>
+                <MenuItem value={30}>Thirty</MenuItem> */}
+                </Select>
+              </FormControl>
+            </Box>
+          </div>
+
           {/* <Typography variant="h5" className="text-center">{formik?.values?.email_address}</Typography> */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4">
             <TextField
               onChange={onChange}
-              name="providerName"
+              label="Details"
+              name="details"
               required
               margin="normal"
               fullWidth
@@ -533,7 +681,8 @@ export default function ListOfMedicines() {
             />
             <TextField
               onChange={onChange}
-              name="providerCredentials"
+              label="Diagnosis"
+              name="diagnosis"
               required
               margin="normal"
               fullWidth
@@ -545,62 +694,46 @@ export default function ListOfMedicines() {
             required
             margin="normal"
             fullWidth
-            placeholder="Degree"
-            name="degree"
+            placeholder="volumePrescribed"
+            name="volumePrescribed"
           />
           <>
-            <TextField
-              onChange={onChange}
-              required
-              //   type="number"
-              //   type="number"
-              margin="normal"
-              fullWidth
-              placeholder="DEA Number"
-              name="deaNumber"
-            />
-            {/* <TextField
-              onChange={onChange}
-              required
-              type="number"
-              margin="normal"
-              fullWidth
-              placeholder="No. Of Patients"
-              name="noOfPatients"
-            /> */}
-            {/* <TextField
-              onChange={onChange}
-              required
-              margin="normal"
-              //   type="number"
-              fullWidth
-              placeholder="DEAX Number"
-              name="deaxNumber"
-            /> */}
-            <div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4">
+              <TextField
+                onChange={onChange}
+                required
+                //   type="number"
+                //   type="number"
+                margin="normal"
+                fullWidth
+                placeholder="ssn"
+                name="ssn"
+              />
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <DatePicker
+                  label="Prescription Date "
+                  className="md:mt-4"
                   name=""
-                  onChange={(e) => onChange(e, "deaNumberExpiryDate")}
+                  onChange={(e) => onChange(e, "dateOfPrescription")}
                   // label="Basic example"
                   value={formData.deaNumberExpiryDate}
                   //
                   renderInput={(params) => <TextField {...params} />}
                 />
               </LocalizationProvider>
-
-              <LocalizationProvider dateAdapter={AdapterDateFns}>
-                <DatePicker
-                  // name="expirationDate"
-                  // label="Basic example"
-                  value={formData.expiryDate}
-                  onChange={(e) => onChange(e, "expiryDate")}
-                  renderInput={(params) => <TextField {...params} />}
-                />
-              </LocalizationProvider>
             </div>
 
-           
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4">
+              <TextField
+                onChange={onChange}
+                required
+                type="number"
+                margin="normal"
+                fullWidth
+                placeholder="volumeDispensed"
+                name="volumeDispensed"
+              />
+            </div>
           </>
         </DialogContent>
         <DialogActions>

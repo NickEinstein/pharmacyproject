@@ -35,12 +35,12 @@ import UserApi from "apis/UserApi";
 import { useSnackbar } from "notistack";
 // import { LoadingButton } from "@mui/lab";
 
-function createData(name, calories, fat, carbs,vitamins, protein) {
+function createData(name, calories, fat, carbs, vitamins, protein) {
   return {
     name,
     calories,
     fat,
-    
+    carbs,
     vitamins,
     protein,
   };
@@ -97,17 +97,18 @@ const headCells = [
     disablePadding: false,
     label: "DEA Number",
   },
-  // {
-  //   id: "carbs",
-  //   numeric: false,
-  //   disablePadding: false,
-  //   label: "No. Of Patients",
-  // },
+
   {
     id: "vitamins",
     numeric: false,
     disablePadding: false,
     label: "DEA Expiry Date",
+  },
+  {
+    id: "carbs",
+    numeric: false,
+    disablePadding: false,
+    label: "Liscence Number",
   },
   {
     id: "protein",
@@ -189,21 +190,25 @@ export default function ListOfMedicines() {
   const [value, setValue] = React.useState(null);
   const [meds, setMeds] = React.useState([null]);
   const [formData, setFormdata] = React.useState({
-    
     providerName: "string",
     providerCredentials: "string",
     degree: "string",
     expiryDate: "2023-01-15T08:15:00.505Z",
     deaNumber: "string",
     deaNumberExpiryDate: "2023-01-15T08:15:00.505Z",
-    deaxNumber: "string",
-    noOfPatients: 0,
+    licenseNumber: "string",
+    licenseNumberExpiryDate: "2023-01-20T03:38:23.896Z",
   });
 
- 
-
   const rows = meds?.map((e) =>
-    createData(e?.providerName, e?.degree, e?.deaNumber,e?.deaNumberExpiryDate,  e?.id)
+    createData(
+      e?.providerName,
+      e?.degree,
+      e?.deaNumber,
+      e?.licenseNumber,
+      e?.deaNumberExpiryDate,
+      e?.licenseNumberExpiryDate
+    )
   );
 
   React.useEffect(() => {
@@ -218,22 +223,18 @@ export default function ListOfMedicines() {
         ...formData,
         [name]: e,
       });
-    } else
-
-    {
-      if (e.target.name === 'noOfPatients'){
+    } else {
+      if (e.target.name === "noOfPatients") {
         setFormdata({
           ...formData,
-          [e.target.name]:  +e.target.value,
+          [e.target.name]: +e.target.value,
         });
-      }
-      else
-       setFormdata({
-         ...formData,
-         [e.target.name]: e.target.value,
-       });
+      } else
+        setFormdata({
+          ...formData,
+          [e.target.name]: e.target.value,
+        });
     }
-      
   };
 
   console.log(formData);
@@ -260,7 +261,7 @@ export default function ListOfMedicines() {
 
   const ridersUnderCompanyR = async (companyId) => {
     const res = await post({
-      endpoint: `Dispenser/create-dispenser`,
+      endpoint: `prescriber/create-prescriber`,
       body: { ...formData },
       // auth: true,
     });
@@ -282,7 +283,7 @@ export default function ListOfMedicines() {
 
   const getRidersUnderCompanyR = async (companyId) => {
     const res = await get({
-      endpoint: `Dispenser/get-dispensers`,
+      endpoint: `prescriber/get-prescribers`,
       body: { ...formData },
       // auth: true,
     });
@@ -302,7 +303,7 @@ export default function ListOfMedicines() {
 
   const deleteItem = async (id) => {
     const res = await del({
-      endpoint: `Dispenser/delete-dispenser?Id=${id}`,
+      endpoint: `prescriber/delete-prescribers?Id=${id}`,
       //  body: { ...formData },
       // auth: true,
     });
@@ -373,7 +374,7 @@ export default function ListOfMedicines() {
           <div>
             <Typography variant="h4" className="font-bold">
               <span class="text-[#1D242E80]">Personnel Manager </span>&gt;
-              Dispenser
+              Prescriber
             </Typography>
             <Typography variant="h6" className="">
               List of Medical Personnels available
@@ -390,7 +391,7 @@ export default function ListOfMedicines() {
               variant="contained"
               startIcon={<Add />}
             >
-              <Typography variant="h6">Add Dispenser</Typography>
+              <Typography variant="h6">Add Prescriber</Typography>
             </Button>
           </div>
         </div>
@@ -452,8 +453,10 @@ export default function ListOfMedicines() {
                       </TableCell>
                       <TableCell align="left">{row.calories}</TableCell>
                       <TableCell align="left">{row.fat}</TableCell>
-                      {/* <TableCell align="left">{row.carbs}</TableCell> */}
-                      <TableCell align="left">{moment(row.vitamins).format('ll')}</TableCell>
+                      <TableCell align="left">{row.carbs}</TableCell>
+                      <TableCell align="left">
+                        {moment(row.vitamins).format("ll")}
+                      </TableCell>
                       <TableCell align="right">
                         <DeleteIcon
                           className="cursor-pointer"
@@ -505,7 +508,7 @@ export default function ListOfMedicines() {
         // sx={{width:"2000px", border:'2px solid red'}}
         // TransitionComponent={Transition}
       >
-        <DialogTitle>Add Dispenser</DialogTitle>
+        <DialogTitle>Add Prescriber</DialogTitle>
         <DialogContent sx={{ width: "500px" }}>
           {/* <DialogContentText>
             To subscribe to this website, please enter your email address here.
@@ -520,7 +523,7 @@ export default function ListOfMedicines() {
           >
             This will only take a few minutes
           </Typography>
-          
+
           {/* <Typography variant="h5" className="text-center">{formik?.values?.email_address}</Typography> */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4">
             <TextField
@@ -549,37 +552,21 @@ export default function ListOfMedicines() {
             name="degree"
           />
           <>
-            <TextField
-              onChange={onChange}
-              required
-              //   type="number"
-              //   type="number"
-              margin="normal"
-              fullWidth
-              placeholder="DEA Number"
-              name="deaNumber"
-            />
-            {/* <TextField
-              onChange={onChange}
-              required
-              type="number"
-              margin="normal"
-              fullWidth
-              placeholder="No. Of Patients"
-              name="noOfPatients"
-            /> */}
-            {/* <TextField
-              onChange={onChange}
-              required
-              margin="normal"
-              //   type="number"
-              fullWidth
-              placeholder="DEAX Number"
-              name="deaxNumber"
-            /> */}
-            <div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4">
+              <TextField
+                onChange={onChange}
+                required
+                //   type="number"
+                //   type="number"
+                margin="normal"
+                fullWidth
+                placeholder="DEA Number"
+                name="deaNumber"
+              />
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <DatePicker
+                  label="DEA Number expiry date "
+                  className="md:mt-4"
                   name=""
                   onChange={(e) => onChange(e, "deaNumberExpiryDate")}
                   // label="Basic example"
@@ -588,19 +575,30 @@ export default function ListOfMedicines() {
                   renderInput={(params) => <TextField {...params} />}
                 />
               </LocalizationProvider>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4">
+              <TextField
+                onChange={onChange}
+                required
+                type="number"
+                margin="normal"
+                fullWidth
+                placeholder="Liscence Number"
+                name="licenseNumber"
+              />
 
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <DatePicker
+                  className="md:mt-4"
                   // name="expirationDate"
-                  // label="Basic example"
+                  label="Liscence expiry date "
                   value={formData.expiryDate}
                   onChange={(e) => onChange(e, "expiryDate")}
                   renderInput={(params) => <TextField {...params} />}
                 />
               </LocalizationProvider>
             </div>
-
-           
           </>
         </DialogContent>
         <DialogActions>

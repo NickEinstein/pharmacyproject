@@ -35,16 +35,16 @@ import UserApi from "apis/UserApi";
 import { useSnackbar } from "notistack";
 // import { LoadingButton } from "@mui/lab";
 
-function createData(name, calories, fat, carbs, protein) {
+function createData(name, calories, fat, carbs, availableAmount, protein) {
   return {
     name,
     calories,
     fat,
     carbs,
+    availableAmount,
     protein,
   };
 }
-
 
 function descendingComparator(a, b, orderBy) {
   if (b[orderBy] < a[orderBy]) {
@@ -102,6 +102,12 @@ const headCells = [
     numeric: false,
     disablePadding: false,
     label: "Stock Qty",
+  },
+  {
+    id: "availableAmount",
+    numeric: false,
+    disablePadding: false,
+    label: "Available amount",
   },
   {
     id: "protein",
@@ -195,8 +201,10 @@ export default function ListOfMedicines() {
     noOfBottlesOrdered: 0,
     amountReceivedPerStrength: 0,
     noOfBottlesReceived: 0,
+    amountDispensed: 0,
+    availableAmount: 0,
   });
-  
+
   //  csName: "string",
   //   deaSchedule: "string",
   //   strength: "string",
@@ -210,15 +218,26 @@ export default function ListOfMedicines() {
   //   noOfBottlesReceived: 0,
 
   const rows = meds?.map((e) =>
-    createData(e?.csName, e?.id, "-", e?.noOfBottlesReceived, e?.id)
+    createData(
+      e?.csName,
+      e?.id,
+      "-",
+      e?.noOfBottlesReceived,
+      e?.availableAmount,
+      e?.id
+    )
   );
-  
-  
 
+  function getName(id) {
+    let name = meds?.find((e) => e?.id == id);
+    console.log(name);
 
-  React.useEffect(()=>{
-    getRidersUnderCompanyR()
-  },[])
+    return name?.csName;
+  }
+
+  React.useEffect(() => {
+    getRidersUnderCompanyR();
+  }, []);
 
   const onChange = (e, name) => {
     if (name) {
@@ -228,11 +247,18 @@ export default function ListOfMedicines() {
         ...formData,
         [name]: e,
       });
-    } 
+    } else if (e.target.name == "noOfBottlesReceived")
+      setFormdata({
+        ...formData,
+        [e.target.name]: +e.target.value,
+        availableAmount: +e.target.value,
+      });
     else
       setFormdata({
         ...formData,
-        [e.target.name]:isNaN(e.target.value) ? e.target.value: +e.target.value,
+        [e.target.name]: isNaN(e.target.value)
+          ? e.target.value
+          : +e.target.value,
       });
   };
 
@@ -255,26 +281,28 @@ export default function ListOfMedicines() {
 
   const { enqueueSnackbar } = useSnackbar();
 
-   const [createInventoryMuation, createInventoryMutationResult] = UserApi.useCreateInventoryMutation();
+  const [createInventoryMuation, createInventoryMutationResult] =
+    UserApi.useCreateInventoryMutation();
 
   const ridersUnderCompanyR = async (companyId) => {
+    console.log(formData);
     const res = await post({
       endpoint: `Inventory/create-inventory`,
       body: { ...formData },
       // auth: true,
     });
 
-    getRidersUnderCompanyR()
-      // try {
-      //   const data = await createInventoryMuation({ data: formData }).unwrap();
-      //   // TODO extra login
-      //   // redirect()
-      //   enqueueSnackbar("Logged in successful", { variant: "success" });
-      // } catch (error) {
-      //   enqueueSnackbar(error?.data?.message, "Failed to login", {
-      //     variant: "error",
-      //   });
-      // }
+    getRidersUnderCompanyR();
+    // try {
+    //   const data = await createInventoryMuation({ data: formData }).unwrap();
+    //   // TODO extra login
+    //   // redirect()
+    //   enqueueSnackbar("Logged in successful", { variant: "success" });
+    // } catch (error) {
+    //   enqueueSnackbar(error?.data?.message, "Failed to login", {
+    //     variant: "error",
+    //   });
+    // }
     // console.log(res.data.data);
     // return res.data.data?.length;
   };
@@ -299,15 +327,14 @@ export default function ListOfMedicines() {
     // return res.data.data?.length;
   };
 
-  const deleteItem= async(id)=>{
-     const res = await del({
-       endpoint: `Inventory/delete-inventory?Id=${id}`,
+  const deleteItem = async (id) => {
+    const res = await del({
+      endpoint: `prescriber/delete-prescriber?Id=${id}`,
       //  body: { ...formData },
-       // auth: true,
-     });
+      // auth: true,
+    });
     getRidersUnderCompanyR();
-
-  }
+  };
 
   const handleClick = (event, name) => {
     const selectedIndex = selected.indexOf(name);
@@ -447,11 +474,14 @@ export default function ListOfMedicines() {
                         scope="row"
                         // padding="none"
                       >
-                        {row.name}
+                        {row?.name}
                       </TableCell>
-                      <TableCell align="left">{row.calories}</TableCell>
-                      <TableCell align="left">{row.fat}</TableCell>
-                      <TableCell align="left">{row.carbs}</TableCell>
+                      <TableCell align="left">
+                        {getName(row?.calories)}
+                      </TableCell>
+                      <TableCell align="left">{row?.fat}</TableCell>
+                      <TableCell align="left">{row?.carbs}</TableCell>
+                      <TableCell align="left">{row?.availableAmount}</TableCell>
                       <TableCell align="right">
                         <DeleteIcon
                           className="cursor-pointer"
@@ -578,9 +608,10 @@ export default function ListOfMedicines() {
             <div>
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <DatePicker
+                  className="my-4"
                   name=""
                   onChange={(e) => onChange(e, "dateAddedToInventory")}
-                  // label="Basic example"
+                  label="Date Added to Inventory"
                   value={formData.dateAddedToInventory}
                   //
                   renderInput={(params) => <TextField {...params} />}
@@ -589,9 +620,10 @@ export default function ListOfMedicines() {
 
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <DatePicker
+                  className="my-4"
                   name=""
                   onChange={(e) => onChange(e, "dateReceived")}
-                  // label="Basic example"
+                  label="Date Received"
                   value={formData.dateReceived}
                   renderInput={(params) => <TextField {...params} />}
                 />
@@ -600,7 +632,7 @@ export default function ListOfMedicines() {
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <DatePicker
                   // name="expirationDate"
-                  // label="Basic example"
+                  label="Expiration Date"
                   value={formData.expirationDate}
                   onChange={(e) => onChange(e, "expirationDate")}
                   renderInput={(params) => <TextField {...params} />}
