@@ -41,6 +41,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import WallCards from "common/WallCards";
 import { AccountCircle } from "@mui/icons-material";
+import moment from "moment";
 
 function ToDoorSearch(props) {
   const [age, setAge] = React.useState("");
@@ -118,8 +119,8 @@ function ToDoorSearch(props) {
             <div>Good Morning</div>
           </div>
           <div className="flex gap-2">
-            <span>14 January 2022</span>
-            <span>22:45:04</span>
+            <span>{moment(new Date()).format('ll')}</span>
+            {/* <span>22:45:04</span> */}
           </div>
         </div>
       </div>
