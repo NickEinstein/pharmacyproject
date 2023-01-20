@@ -756,7 +756,7 @@ setHoldPrescribedInfo(e);
           </div>
 
           {openDispensedVolume && (
-            <TextField onChange={(e)=>setVolumeDispensed(+e.target.value)} name="volumeDispensed" />
+            <TextField label='Dispensed Volume' className="mt-4" onChange={(e)=>setVolumeDispensed(+e.target.value)} name="volumeDispensed" />
           )}
         </DialogContent>
         <DialogActions>
