@@ -130,22 +130,10 @@ function ManageCompanies(props) {
               Inventory
             </Typography>
             <Typography variant="h6" className="font-bold">
-              List of Medicine Available For sales
+              {/* List of Medicine Available For sales */}
             </Typography>
           </div>
-          <div>
-            <Button
-              style={{
-                width: "250px",
-                height: "50px",
-                backgroundColor: "#F0483E",
-              }}
-              variant="contained"
-              startIcon={<Add />}
-            >
-              <Typography variant="h6">Add New Item</Typography>
-            </Button>
-          </div>
+          
         </div>
       </div>
 

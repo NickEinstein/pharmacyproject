@@ -11,6 +11,7 @@ import TableRow from "@mui/material/TableRow";
 import TableSortLabel from "@mui/material/TableSortLabel";
 import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
+import BorderColorIcon from "@mui/icons-material/BorderColor";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
@@ -30,17 +31,17 @@ import {
   TextField,
 } from "@mui/material";
 import { Add } from "@mui/icons-material";
-import { del, get, post } from "services/fetch";
+import { del, get, post, put } from "services/fetch";
 import UserApi from "apis/UserApi";
 import { useSnackbar } from "notistack";
 // import { LoadingButton } from "@mui/lab";
 
-function createData(name, calories, fat, carbs,vitamins, protein) {
+function createData(name,title, calories, fat, carbs,vitamins, protein) {
   return {
     name,
     calories,
     fat,
-    
+    title,
     vitamins,
     protein,
   };
@@ -83,7 +84,13 @@ const headCells = [
     id: "name",
     numeric: false,
     disablePadding: true,
-    label: "Provider Name",
+    label: "Dispenser Name",
+  },
+  {
+    id: "title",
+    numeric: false,
+    disablePadding: true,
+    label: "Dispenser Title",
   },
   {
     id: "calories",
@@ -187,6 +194,7 @@ export default function ListOfMedicines() {
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [value, setValue] = React.useState(null);
+  const [isUpdate, setIsUpdate] = React.useState([null]);
   const [meds, setMeds] = React.useState([null]);
   const [formData, setFormdata] = React.useState({
     
@@ -203,7 +211,7 @@ export default function ListOfMedicines() {
  
 
   const rows = meds?.map((e) =>
-    createData(e?.providerName, e?.degree, e?.deaNumber,e?.deaNumberExpiryDate,  e?.id)
+    createData(e?.providerName,e?.providerCredentials, e?.degree, e?.deaNumber,e?.deaNumberExpiryDate,  e?.id)
   );
 
   React.useEffect(() => {
@@ -278,6 +286,47 @@ export default function ListOfMedicines() {
     // }
     // console.log(res.data.data);
     // return res.data.data.length;
+  };
+
+  const update = async (companyId) => {
+    const res = await put({
+      endpoint: `Dispenser/update-dispenser`,
+      body: { ...formData },
+      // auth: true,
+    });
+
+    getRidersUnderCompanyR();
+    // try {
+    //   const data = await createInventoryMuation({ data: formData }).unwrap();
+    //   // TODO extra login
+    //   // redirect()
+    //   enqueueSnackbar("Logged in successful", { variant: "success" });
+    // } catch (error) {
+    //   enqueueSnackbar(error?.data?.message, "Failed to login", {
+    //     variant: "error",
+    //   });
+    // }
+    // console.log(res.data.data);
+    // return res.data.data.length;
+  };
+
+
+  const editItem = async (data) => {
+    handleClickOpen();
+    setIsUpdate(true);
+
+    setFormdata({
+      ...formData,
+      providerName: data.name,
+      providerCredentials: data.title,
+      degree: data.calories,
+      expiryDate: "2023-01-15T08:15:00.505Z",
+      deaNumber: data.fat,
+      deaNumberExpiryDate: "2023-01-15T08:15:00.505Z",
+      deaxNumber: "string",
+      noOfPatients: 0,
+    });
+    console.log(data);
   };
 
   const getRidersUnderCompanyR = async (companyId) => {
@@ -450,14 +499,28 @@ export default function ListOfMedicines() {
                       >
                         {row.name}
                       </TableCell>
+                      <TableCell
+                        component="th"
+                        id={labelId}
+                        scope="row"
+                        // padding="none"
+                      >
+                        {row?.title}
+                      </TableCell>
                       <TableCell align="left">{row.calories}</TableCell>
                       <TableCell align="left">{row.fat}</TableCell>
                       {/* <TableCell align="left">{row.carbs}</TableCell> */}
-                      <TableCell align="left">{moment(row.vitamins).format('ll')}</TableCell>
+                      <TableCell align="left">
+                        {moment(row.vitamins).format("ll")}
+                      </TableCell>
                       <TableCell align="right">
                         <DeleteIcon
                           className="cursor-pointer"
                           onClick={() => deleteItem(row.protein)}
+                        />
+                        <BorderColorIcon
+                          className="cursor-pointer"
+                          onClick={() => editItem(row)}
                         />
                       </TableCell>
                     </TableRow>
@@ -520,24 +583,26 @@ export default function ListOfMedicines() {
           >
             This will only take a few minutes
           </Typography>
-          
+
           {/* <Typography variant="h5" className="text-center">{formik?.values?.email_address}</Typography> */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4">
             <TextField
               onChange={onChange}
               name="providerName"
               required
+              value={formData.providerName}
               margin="normal"
               fullWidth
-              placeholder="Provider Name"
+              placeholder="Dispenser Name"
             />
             <TextField
               onChange={onChange}
               name="providerCredentials"
               required
+              value={formData.providerCredentials}
               margin="normal"
               fullWidth
-              placeholder="Provider Credentials"
+              placeholder="Dispenser Title"
             />
           </div>
           <TextField
@@ -546,6 +611,7 @@ export default function ListOfMedicines() {
             margin="normal"
             fullWidth
             placeholder="Degree"
+            value={formData.degree}
             name="degree"
           />
           <>
@@ -554,6 +620,7 @@ export default function ListOfMedicines() {
               required
               //   type="number"
               //   type="number"
+              value={formData.deaNumber}
               margin="normal"
               fullWidth
               placeholder="DEA Number"
@@ -577,35 +644,41 @@ export default function ListOfMedicines() {
               placeholder="DEAX Number"
               name="deaxNumber"
             /> */}
-            <div>
+            <div className="mt-4">
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <DatePicker
                   name=""
+                  inputFormat="MM/dd/yyyy"
                   onChange={(e) => onChange(e, "deaNumberExpiryDate")}
-                  // label="Basic example"
+                  label="DEA Number Expiry Date"
                   value={formData.deaNumberExpiryDate}
                   //
                   renderInput={(params) => <TextField {...params} />}
                 />
               </LocalizationProvider>
 
-              <LocalizationProvider dateAdapter={AdapterDateFns}>
+              {/* <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <DatePicker
-                  // name="expirationDate"
-                  // label="Basic example"
+                  inputFormat="MM/dd/yyyy"
+                  name="expirationDate"
+                  label="Basic example"
                   value={formData.expiryDate}
                   onChange={(e) => onChange(e, "expiryDate")}
                   renderInput={(params) => <TextField {...params} />}
                 />
-              </LocalizationProvider>
+              </LocalizationProvider> */}
             </div>
-
-           
           </>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={ridersUnderCompanyR}>Add</Button>
+          <div>
+            {!isUpdate ? (
+              <Button onClick={ridersUnderCompanyR}>Add</Button>
+            ) : (
+              <Button onClick={update}>Update</Button>
+            )}
+          </div>
         </DialogActions>
       </Dialog>
     </Box>

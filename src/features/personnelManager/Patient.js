@@ -17,7 +17,7 @@ import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import moment from "moment";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-
+import BorderColorIcon from "@mui/icons-material/BorderColor";
 import Slide from "@mui/material/Slide";
 import { visuallyHidden } from "@mui/utils";
 import {
@@ -30,7 +30,7 @@ import {
   TextField,
 } from "@mui/material";
 import { Add } from "@mui/icons-material";
-import { del, get, post } from "services/fetch";
+import { del, get, post, put } from "services/fetch";
 import UserApi from "apis/UserApi";
 import { useSnackbar } from "notistack";
 // import { LoadingButton } from "@mui/lab";
@@ -38,22 +38,22 @@ import { useSnackbar } from "notistack";
 function createData(
   name,
   calories,
-  fat,
-  carbs,
-  vitamins,
+  gender,
+  address,
+  dob,
   driversLicenseNo,
   insuranceNumber,
-  protein
+  id
 ) {
   return {
     name,
     calories,
-    fat,
-    carbs,
-    vitamins,
+    gender,
+    address,
+    dob,
     driversLicenseNo,
     insuranceNumber,
-    protein,
+    id,
   };
 }
 
@@ -96,38 +96,38 @@ const headCells = [
     disablePadding: true,
     label: "Patient Name",
   },
+  // {
+  //   id: "calories",
+  //   numeric: false,
+  //   disablePadding: false,
+  //   label: "SSN",
+  // },
   {
-    id: "calories",
-    numeric: false,
-    disablePadding: false,
-    label: "SSN",
-  },
-  {
-    id: "fat",
+    id: "gender",
     numeric: false,
     disablePadding: false,
     label: "Gender",
   },
  {
-    id: "carbs",
+    id: "address",
     numeric2: true,
     disablePadding: false,
     label: "Address",
   },
   {
-    id: "vitamins",
+    id: "dob",
     numeric: false,
     disablePadding: false,
     label: "Date Of Birth",
   },
  
 
-  {
-    id: "driversLicenseNo",
-    numeric: false,
-    disablePadding: false,
-    label: "Drivers Liscence No.",
-  },
+  // {
+  //   id: "driversLicenseNo",
+  //   numeric: false,
+  //   disablePadding: false,
+  //   label: "Drivers Liscence No.",
+  // },
 
   {
     id: "insuranceNumber",
@@ -137,7 +137,7 @@ const headCells = [
   },
 
   {
-    id: "protein",
+    id: "id",
     numeric: true,
     disablePadding: false,
     label: "Action",
@@ -173,7 +173,7 @@ function EnhancedTableHead(props) {
         </TableCell> */}
         {headCells?.map((headCell) => (
           <TableCell
-            key={headCell.id}
+            key={headCell?.id}
             align={
               headCell.numeric ? "right" : headCell.numeric2 ? "center" : "left"
             }
@@ -217,15 +217,16 @@ export default function ListOfMedicines() {
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [value, setValue] = React.useState(null);
   const [meds, setMeds] = React.useState([null]);
+  const [isUpdate, setIsUpdate] = React.useState([null]);
   const [formData, setFormdata] = React.useState({
     // id: 0,
-    patientName: "string",
-    patientAddress: "string",
+    patientName: "",
+    patientAddress: "",
     dob: "2023-01-15T11:25:14.757Z",
-    gender: "string",
+    gender: "",
     ssn: "string",
     driversLicenseNo: "string",
-    insuranceNumber: "string",
+    insuranceNumber: "",
   });
 
   const rows = meds?.map((e) =>
@@ -238,7 +239,8 @@ export default function ListOfMedicines() {
       e?.dob,
 
       e?.driversLicenseNo,
-      e?.insuranceNumber
+      e?.insuranceNumber,
+      e?.id,
     )
   );
 
@@ -247,6 +249,12 @@ export default function ListOfMedicines() {
   }, []);
 
   const onChange = (e, name) => {
+    if (name) {
+      setFormdata({
+        ...formData,
+        [name]: e,
+      });
+    } 
     setFormdata({
       ...formData,
       [e.target.name]: e.target.value,
@@ -297,6 +305,28 @@ export default function ListOfMedicines() {
     // return res.data.data.length;
   };
 
+   const upDate = async (companyId) => {
+     const res = await put({
+       endpoint: `patient/update-patient`,
+       body: { ...formData },
+       // auth: true,
+     });
+
+     getRidersUnderCompanyR();
+     // try {
+     //   const data = await createInventoryMuation({ data: formData }).unwrap();
+     //   // TODO extra login
+     //   // redirect()
+     //   enqueueSnackbar("Logged in successful", { variant: "success" });
+     // } catch (error) {
+     //   enqueueSnackbar(error?.data?.message, "Failed to login", {
+     //     variant: "error",
+     //   });
+     // }
+     // console.log(res.data.data);
+     // return res.data.data.length;
+   };
+
   const getRidersUnderCompanyR = async (companyId) => {
     const res = await get({
       endpoint: `patient/get-patients`,
@@ -324,6 +354,24 @@ export default function ListOfMedicines() {
       // auth: true,
     });
     getRidersUnderCompanyR();
+  };
+
+  const editItem = async (data) => {
+    handleClickOpen();
+    setIsUpdate(true)
+
+   setFormdata({
+     ...formData,
+     id: data.id,
+     patientName: data.name,
+     patientAddress: data.address,
+     dob: data.dob,
+     gender: data.gender,
+
+     insuranceNumber: data.insuranceNumber,
+   });
+    console.log(data)
+   
   };
 
   const handleClick = (event, name) => {
@@ -368,11 +416,13 @@ export default function ListOfMedicines() {
   const [open, setOpen] = React.useState(false);
 
   const handleClickOpen = () => {
-    setOpen(true);
+    setOpen(!open);
   };
 
   const handleClose = () => {
-    setOpen(false);
+    setOpen(!open);
+    setIsUpdate(false);
+
   };
 
   const Transition = React.forwardRef(function Transition(props, ref) {
@@ -467,19 +517,25 @@ export default function ListOfMedicines() {
                       >
                         {row.name}
                       </TableCell>
-                      <TableCell align="left">{row.calories}</TableCell>
-                      <TableCell align="left">{row.fat}</TableCell>
-                      <TableCell sx={{width:'20%'}} align="center">{row.carbs}</TableCell>
-                      <TableCell align="left">
-                        {moment(row.vitamins).format("ll")}
+                      {/* <TableCell align="left">{row.calories}</TableCell> */}
+                      <TableCell align="left">{row.gender}</TableCell>
+                      <TableCell sx={{ width: "20%" }} align="center">
+                        {row.address}
                       </TableCell>
-                      <TableCell align="left">{row.driversLicenseNo}</TableCell>
+                      <TableCell align="left">
+                        {moment(row.dob).format("ll")}
+                      </TableCell>
+                      {/* <TableCell align="left">{row.driversLicenseNo}</TableCell> */}
                       <TableCell align="left">{row.insuranceNumber}</TableCell>
 
                       <TableCell align="right">
                         <DeleteIcon
                           className="cursor-pointer"
-                          onClick={() => deleteItem(row.protein)}
+                          onClick={() => deleteItem(row.id)}
+                        />{" "}
+                        <BorderColorIcon
+                          className="cursor-pointer"
+                          onClick={() => editItem(row)}
                         />
                       </TableCell>
                     </TableRow>
@@ -547,12 +603,14 @@ export default function ListOfMedicines() {
             <TextField
               onChange={onChange}
               name="patientName"
+              value={formData.patientName}
               required
               margin="normal"
               fullWidth
               placeholder="patient Name"
             />
             <TextField
+              value={formData.patientAddress}
               onChange={onChange}
               name="patientAddress"
               required
@@ -564,9 +622,10 @@ export default function ListOfMedicines() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 mt-2">
             <LocalizationProvider dateAdapter={AdapterDateFns}>
               <DatePicker
+                inputFormat="MM/dd/yyyy"
                 name=""
                 onChange={(e) => onChange(e, "dob")}
-                // label="Basic example"
+                label="Date of Birth"
                 value={formData.dob}
                 //
                 renderInput={(params) => <TextField {...params} />}
@@ -579,10 +638,11 @@ export default function ListOfMedicines() {
               fullWidth
               placeholder="Gender"
               name="gender"
+              value={formData.gender}
             />
           </div>{" "}
           <>
-            <TextField
+            {/* <TextField
               onChange={onChange}
               required
               //   type="number"
@@ -591,8 +651,8 @@ export default function ListOfMedicines() {
               fullWidth
               placeholder="SSN"
               name="ssn"
-            />
-            <TextField
+            /> */}
+            {/* <TextField
               onChange={onChange}
               required
             //   type="number"
@@ -600,11 +660,12 @@ export default function ListOfMedicines() {
               fullWidth
               placeholder="Drivers License No"
               name="driversLicenseNo"
-            />
+            /> */}
             <TextField
               onChange={onChange}
               required
               margin="normal"
+              value={formData.insuranceNumber}
               //   type="number"
               fullWidth
               placeholder="insurance Number"
@@ -612,9 +673,12 @@ export default function ListOfMedicines() {
             />
           </>
         </DialogContent>
-        <DialogActions>
+        <DialogActions className="flex gap-2">
           <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={ridersUnderCompanyR}>Add</Button>
+          <div>
+{         !isUpdate?   <Button onClick={ridersUnderCompanyR}>Add</Button>
+           : <Button onClick={upDate}>Update</Button>}
+          </div>
         </DialogActions>
       </Dialog>
     </Box>

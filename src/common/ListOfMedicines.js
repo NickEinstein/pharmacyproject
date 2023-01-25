@@ -11,10 +11,11 @@ import TableRow from "@mui/material/TableRow";
 import TableSortLabel from "@mui/material/TableSortLabel";
 import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
+import BorderColorIcon from "@mui/icons-material/BorderColor";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+// import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 
@@ -30,19 +31,37 @@ import {
   TextField,
 } from "@mui/material";
 import { Add } from "@mui/icons-material";
-import { del, get, post } from "../services/fetch";
+import { del, get, post, put } from "../services/fetch";
 import UserApi from "apis/UserApi";
 import { useSnackbar } from "notistack";
+import moment from "moment";
 // import { LoadingButton } from "@mui/lab";
 
-function createData(name, calories, fat, carbs, availableAmount, protein) {
+function createData(
+  name,
+  calories,
+  fat,
+  stockQty,
+  availableAmount,
+  expiryDate,
+  action,
+  dateAddedToInventory,
+  deaSchedule,
+  dateReceived,
+  noOfBottlesOrdered
+) {
   return {
     name,
     calories,
     fat,
-    carbs,
+    stockQty,
     availableAmount,
-    protein,
+    expiryDate,
+    action,
+    dateAddedToInventory,
+    deaSchedule,
+    dateReceived,
+    noOfBottlesOrdered,
   };
 }
 
@@ -85,12 +104,12 @@ const headCells = [
     disablePadding: true,
     label: "Medicine Name",
   },
-  {
-    id: "calories",
-    numeric: false,
-    disablePadding: false,
-    label: "Medicine Id",
-  },
+  // {
+  //   id: "calories",
+  //   numeric: false,
+  //   disablePadding: false,
+  //   label: "Medicine Id",
+  // },
   {
     id: "fat",
     numeric: false,
@@ -98,7 +117,7 @@ const headCells = [
     label: "Group Name",
   },
   {
-    id: "carbs",
+    id: "stockQty",
     numeric: false,
     disablePadding: false,
     label: "Stock Qty",
@@ -110,7 +129,13 @@ const headCells = [
     label: "Available amount",
   },
   {
-    id: "protein",
+    id: "expirationDate",
+    numeric: false,
+    disablePadding: true,
+    label: "Expiry Date",
+  },
+  {
+    id: "action",
     numeric: true,
     disablePadding: false,
     label: "Action",
@@ -187,6 +212,7 @@ export default function ListOfMedicines() {
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
   const [value, setValue] = React.useState(null);
+  const [isUpdate, setIsUpdate] = React.useState([null]);
   const [meds, setMeds] = React.useState([null]);
   const [formData, setFormdata] = React.useState({
     // id: 0,
@@ -224,7 +250,12 @@ export default function ListOfMedicines() {
       "-",
       e?.noOfBottlesReceived,
       e?.availableAmount,
-      e?.id
+      moment(e?.expirationDate).format("ll"),
+      e?.id,
+      e?.dateAddedToInventory,
+      e?.deaSchedule,
+      e?.dateReceived,
+      e?.noOfBottlesOrdered
     )
   );
 
@@ -261,6 +292,7 @@ export default function ListOfMedicines() {
           : +e.target.value,
       });
   };
+  // const [value, setValue] = React.useState(dayjs("2022-04-07"));
 
   console.log(formData);
 
@@ -326,7 +358,27 @@ export default function ListOfMedicines() {
     setMeds(res.data.data);
     // return res.data.data?.length;
   };
+  const upDate = async (companyId) => {
+    const res = await put({
+      endpoint: `patient/update-patient`,
+      body: { ...formData },
+      // auth: true,
+    });
 
+    getRidersUnderCompanyR();
+    // try {
+    //   const data = await createInventoryMuation({ data: formData }).unwrap();
+    //   // TODO extra login
+    //   // redirect()
+    //   enqueueSnackbar("Logged in successful", { variant: "success" });
+    // } catch (error) {
+    //   enqueueSnackbar(error?.data?.message, "Failed to login", {
+    //     variant: "error",
+    //   });
+    // }
+    // console.log(res.data.data);
+    // return res.data.data.length;
+  };
   const deleteItem = async (id) => {
     const res = await del({
       endpoint: `prescriber/delete-prescriber?Id=${id}`,
@@ -334,6 +386,23 @@ export default function ListOfMedicines() {
       // auth: true,
     });
     getRidersUnderCompanyR();
+  };
+
+  const editItem = async (data) => {
+    handleClickOpen();
+    setIsUpdate(true);
+
+    setFormdata({
+      ...formData,
+      csName: data.name,
+      deaSchedule: data.deaSchedule,
+      expirationDate: data.expiryDate,
+      dateReceived: data.dateReceived,
+      dateAddedToInventory: data.dateAddedToInventory,
+      noOfBottlesOrdered: data.noOfBottlesOrdered,
+      noOfBottlesReceived: data.stockQty,
+    });
+    console.log(data);
   };
 
   const handleClick = (event, name) => {
@@ -476,16 +545,21 @@ export default function ListOfMedicines() {
                       >
                         {row?.name}
                       </TableCell>
-                      <TableCell align="left">
+                      {/* <TableCell align="left">
                         {getName(row?.calories)}
-                      </TableCell>
+                      </TableCell> */}
                       <TableCell align="left">{row?.fat}</TableCell>
-                      <TableCell align="left">{row?.carbs}</TableCell>
+                      <TableCell align="left">{row?.stockQty}</TableCell>
                       <TableCell align="left">{row?.availableAmount}</TableCell>
+                      <TableCell align="left">{row?.expiryDate}</TableCell>
                       <TableCell align="right">
                         <DeleteIcon
                           className="cursor-pointer"
-                          onClick={() => deleteItem(row.protein)}
+                          onClick={() => deleteItem(row.action)}
+                        />
+                        <BorderColorIcon
+                          className="cursor-pointer"
+                          onClick={() => editItem(row)}
                         />
                       </TableCell>
                     </TableRow>
@@ -556,6 +630,7 @@ export default function ListOfMedicines() {
               name="csName"
               required
               margin="normal"
+              value={formData.csName}
               fullWidth
               placeholder="Name"
             />
@@ -563,19 +638,12 @@ export default function ListOfMedicines() {
               onChange={onChange}
               name="deaSchedule"
               required
+              value={formData.deaSchedule}
               margin="normal"
               fullWidth
               placeholder="deaSchedule"
             />
           </div>
-          <TextField
-            onChange={onChange}
-            required
-            margin="normal"
-            fullWidth
-            placeholder="strength"
-            name="strength"
-          />
 
           <>
             <TextField
@@ -584,10 +652,11 @@ export default function ListOfMedicines() {
               type="number"
               margin="normal"
               fullWidth
+              value={formData.noOfBottlesOrdered}
               placeholder="noOfBottlesOrdered"
               name="noOfBottlesOrdered"
             />
-            <TextField
+            {/* <TextField
               onChange={onChange}
               required
               type="number"
@@ -595,11 +664,12 @@ export default function ListOfMedicines() {
               fullWidth
               placeholder="amountReceivedPerStrength"
               name="amountReceivedPerStrength"
-            />
+            /> */}
             <TextField
               onChange={onChange}
               required
               margin="normal"
+              value={formData.noOfBottlesReceived}
               type="number"
               fullWidth
               placeholder="noOfBottlesReceived"
@@ -608,6 +678,7 @@ export default function ListOfMedicines() {
             <div>
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <DatePicker
+                  inputFormat="MM/dd/yyyy"
                   className="my-4"
                   name=""
                   onChange={(e) => onChange(e, "dateAddedToInventory")}
@@ -620,6 +691,7 @@ export default function ListOfMedicines() {
 
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <DatePicker
+                  inputFormat="MM/dd/yyyy"
                   className="my-4"
                   name=""
                   onChange={(e) => onChange(e, "dateReceived")}
@@ -631,31 +703,40 @@ export default function ListOfMedicines() {
 
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <DatePicker
+                  inputFormat="MM/dd/yyyy"
+                  // inputFormat="mm-dd-yy"
                   // name="expirationDate"
                   label="Expiration Date"
+                  views={["day", "month", "year"]}
                   value={formData.expirationDate}
                   onChange={(e) => onChange(e, "expirationDate")}
                   renderInput={(params) => <TextField {...params} />}
                 />
               </LocalizationProvider>
             </div>
-            <TextField
-              onChange={onChange}
-              // required
-              margin="normal"
-              fullWidth
-              placeholder="amountOrderedPerStrength"
-              type="number"
-              name="amountOrderedPerStrength"
-              multiline
-              minRows={2}
-              maxRows={5}
-            />
+            {/* <DatePicker
+              openTo="year"
+              views={["year", "month", "day"]}
+              label="Year, month and date"
+              value={value}
+              onChange={(newValue) => {
+                setValue(newValue);
+              }}
+              renderInput={(params) => (
+                <TextField {...params} helperText={null} />
+              )}
+            /> */}
           </>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={ridersUnderCompanyR}>Subscribe</Button>
+          <div>
+            {!isUpdate ? (
+              <Button onClick={ridersUnderCompanyR}>Add</Button>
+            ) : (
+              <Button onClick={upDate}>Update</Button>
+            )}
+          </div>
         </DialogActions>
       </Dialog>
     </Box>

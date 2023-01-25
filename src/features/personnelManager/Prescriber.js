@@ -12,6 +12,7 @@ import TableSortLabel from "@mui/material/TableSortLabel";
 import Typography from "@mui/material/Typography";
 import Paper from "@mui/material/Paper";
 import DeleteIcon from "@mui/icons-material/Delete";
+import BorderColorIcon from "@mui/icons-material/BorderColor";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import moment from "moment";
@@ -30,7 +31,7 @@ import {
   TextField,
 } from "@mui/material";
 import { Add } from "@mui/icons-material";
-import { del, get, post } from "services/fetch";
+import { del, get, post, put } from "services/fetch";
 import UserApi from "apis/UserApi";
 import { useSnackbar } from "notistack";
 // import { LoadingButton } from "@mui/lab";
@@ -187,6 +188,7 @@ export default function ListOfMedicines() {
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [isUpdate, setIsUpdate] = React.useState([null]);
   const [value, setValue] = React.useState(null);
   const [meds, setMeds] = React.useState([null]);
   const [formData, setFormdata] = React.useState({
@@ -358,6 +360,46 @@ export default function ListOfMedicines() {
   const handleClose = () => {
     setOpen(false);
   };
+   const editItem = async (data) => {
+     handleClickOpen();
+     setIsUpdate(true);
+
+     setFormdata({
+       ...formData,
+       providerName: data.name,
+       providerCredentials: data.title,
+       degree: data.calories,
+       expiryDate: "2023-01-15T08:15:00.505Z",
+       deaNumber: data.fat,
+       deaNumberExpiryDate: "2023-01-15T08:15:00.505Z",
+       deaxNumber: "string",
+       noOfPatients: 0,
+     });
+     console.log(data);
+   };
+
+   const update = async (companyId) => {
+     const res = await put({
+       endpoint: `Dispenser/update-dispenser`,
+       body: { ...formData },
+       // auth: true,
+     });
+     
+
+     getRidersUnderCompanyR();
+     // try {
+     //   const data = await createInventoryMuation({ data: formData }).unwrap();
+     //   // TODO extra login
+     //   // redirect()
+     //   enqueueSnackbar("Logged in successful", { variant: "success" });
+     // } catch (error) {
+     //   enqueueSnackbar(error?.data?.message, "Failed to login", {
+     //     variant: "error",
+     //   });
+     // }
+     // console.log(res.data.data);
+     // return res.data.data.length;
+   };
 
   const Transition = React.forwardRef(function Transition(props, ref) {
     return <Slide direction="up" ref={ref} {...props} />;
@@ -462,6 +504,10 @@ export default function ListOfMedicines() {
                           className="cursor-pointer"
                           onClick={() => deleteItem(row.protein)}
                         />
+                        <BorderColorIcon
+                          className="cursor-pointer"
+                          onClick={() => editItem(row)}
+                        />
                       </TableCell>
                     </TableRow>
                   );
@@ -531,6 +577,7 @@ export default function ListOfMedicines() {
               name="providerName"
               required
               margin="normal"
+              value={formData.providerName}
               fullWidth
               placeholder="Provider Name"
             />
@@ -539,6 +586,7 @@ export default function ListOfMedicines() {
               name="providerCredentials"
               required
               margin="normal"
+              value={formData.providerCredentials}
               fullWidth
               placeholder="Provider Credentials"
             />
@@ -549,6 +597,7 @@ export default function ListOfMedicines() {
             margin="normal"
             fullWidth
             placeholder="Degree"
+            value={formData.degree}
             name="degree"
           />
           <>
@@ -562,6 +611,7 @@ export default function ListOfMedicines() {
                 fullWidth
                 placeholder="DEA Number"
                 name="deaNumber"
+                value={formData.deaNumber}
               />
               <LocalizationProvider dateAdapter={AdapterDateFns}>
                 <DatePicker
@@ -603,7 +653,11 @@ export default function ListOfMedicines() {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={ridersUnderCompanyR}>Add</Button>
+          {!isUpdate ? (
+            <Button onClick={ridersUnderCompanyR}>Add</Button>
+          ) : (
+            <Button onClick={update}>Update</Button>
+          )}
         </DialogActions>
       </Dialog>
     </Box>
