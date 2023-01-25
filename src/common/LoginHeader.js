@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 // import trustedBy1 from './images/Vector.png'
 import toDoorLogo from "images/Ellipse 30.png";
 import logoz from "images/obiPharmLogo.svg";
+import logow from "images/sidebar/logoHeight.jpg";
 import trustedBy3 from '../images/Rectangle 78.png'
 // import trustedBy3 from './images/trustedBy-3.png'
 // import trustedBy4 from './images/trustedBy-4.png'
@@ -21,8 +22,8 @@ const LoginHeader = (prop) => {
         <div className="flex items-center">
           <div className="flex relative items-center">
             <img
-              src={logoz}
-              style={{ width: "70px" }}
+              src={logow}
+              style={{ width: "70px", height:'40px' }}
               alt="softwork logo"
               className="cursor-pointer"
               onClick={redirect}
@@ -40,7 +41,7 @@ const LoginHeader = (prop) => {
 
               //   style={{ color: "0C3BAA", marginLeft: "1px" }}
             >
-              Obi’s GP
+              Great Heights
             </Typography>
           </div>
         </div>
