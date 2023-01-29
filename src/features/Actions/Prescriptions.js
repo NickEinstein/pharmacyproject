@@ -767,7 +767,6 @@ export default function ListOfMedicines() {
               required
               margin="normal"
               fullWidth
-              placeholder="Provider Name"
             />
             <TextField
               onChange={onChange}
@@ -776,7 +775,6 @@ export default function ListOfMedicines() {
               required
               margin="normal"
               fullWidth
-              placeholder="Provider Credentials"
             />
           </div>
           <TextField
@@ -784,7 +782,7 @@ export default function ListOfMedicines() {
             required
             margin="normal"
             fullWidth
-            placeholder="volumePrescribed"
+            placeholder="Amount Prescribed"
             label="Amount Prescribed"
             name="volumePrescribed"
           />
@@ -822,7 +820,7 @@ export default function ListOfMedicines() {
                 type="number"
                 margin="normal"
                 fullWidth
-                placeholder="volumeDispensed"
+                placeholder="Amount Dispensed"
                 label="Amount Dispensed"
                 name="volumeDispensed"
               />
