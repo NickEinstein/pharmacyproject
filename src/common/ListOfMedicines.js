@@ -216,10 +216,10 @@ export default function ListOfMedicines() {
   const [meds, setMeds] = React.useState([null]);
   const [formData, setFormdata] = React.useState({
     // id: 0,
-    csName: "string",
-    deaSchedule: "string",
-    strength: "string",
-    lotNumber: "string",
+    csName: "",
+    deaSchedule: "",
+    strength: "",
+    lotNumber: "",
     expirationDate: null,
     dateReceived: null,
     dateAddedToInventory: null,
@@ -390,8 +390,9 @@ export default function ListOfMedicines() {
   };
 
   const editItem = async (data) => {
-    handleClickOpen();
+    // handleClickOpen();
     setIsUpdate(true);
+    setOpen(true)
 
     setFormdata({
       ...formData,
@@ -450,10 +451,28 @@ export default function ListOfMedicines() {
 
   const handleClickOpen = () => {
     setOpen(true);
+    setIsUpdate(false)
   };
 
   const handleClose = () => {
     setOpen(false);
+
+    setFormdata({
+      // id: 0,
+      csName: "",
+      deaSchedule: "",
+      strength: "",
+      lotNumber: "",
+      expirationDate: null,
+      dateReceived: null,
+      dateAddedToInventory: null,
+      amountOrderedPerStrength: 0,
+      noOfBottlesOrdered: 0,
+      amountReceivedPerStrength: 0,
+      noOfBottlesReceived: 0,
+      amountDispensed: 0,
+      availableAmount: 0,
+    });
   };
 
   const Transition = React.forwardRef(function Transition(props, ref) {
@@ -635,6 +654,7 @@ export default function ListOfMedicines() {
               value={formData.csName}
               fullWidth
               placeholder="Name"
+              label="Name"
             />
             <TextField
               onChange={onChange}
@@ -643,7 +663,8 @@ export default function ListOfMedicines() {
               value={formData.deaSchedule}
               margin="normal"
               fullWidth
-              placeholder="deaSchedule"
+              label="DEA Schedule"
+              placeholder="DEA Schedule"
             />
           </div>
 
@@ -656,6 +677,7 @@ export default function ListOfMedicines() {
               fullWidth
               value={formData.noOfBottlesOrdered}
               placeholder="noOfBottlesOrdered"
+              label="Amount Ordered"
               name="noOfBottlesOrdered"
             />
             {/* <TextField
@@ -675,6 +697,7 @@ export default function ListOfMedicines() {
               type="number"
               fullWidth
               placeholder="noOfBottlesReceived"
+              label="Amount Received"
               name="noOfBottlesReceived"
             />
             <div>

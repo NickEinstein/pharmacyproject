@@ -201,9 +201,9 @@ export default function ListOfMedicines() {
     providerName: "",
     providerCredentials: "",
     degree: "",
-    expiryDate: "2023-01-15T08:15:00.505Z",
+    expiryDate: null,
     deaNumber: "",
-    deaNumberExpiryDate: "2023-01-15T08:15:00.505Z",
+    deaNumberExpiryDate: null,
     deaxNumber: "",
     noOfPatients: 0,
   });
@@ -327,10 +327,10 @@ console.log(formData)
       providerName: data.name,
       providerCredentials: data.title,
       degree: data.degree,
-      expiryDate: "2023-01-15T08:15:00.505Z",
+      expiryDate:null,
       deaNumber: data.deaNumber,
-      deaNumberExpiryDate: "2023-01-15T08:15:00.505Z",
-      deaxNumber: "string",
+      deaNumberExpiryDate:null,
+      deaxNumber: "",
       noOfPatients: 0,
     });
     console.log(data);
@@ -417,9 +417,9 @@ console.log(formData)
     providerName: "",
     providerCredentials: "",
     degree: "",
-    expiryDate: "",
+    expiryDate: null,
     deaNumber: "",
-    deaNumberExpiryDate: "",
+    deaNumberExpiryDate: null,
     deaxNumber: "",
     noOfPatients: 0,
   })
