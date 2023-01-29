@@ -88,15 +88,15 @@ export default function PermanentDrawerLeft() {
     // {name:'Reviews', d:RouteEnum.MANAGE_COMPANIES},
     // { name: "Notifications", d: "#", image: message, color: false },
     // { name: "Chat with Visitors", d: "#", image: messages },
-    {
-      name: "Application Settings",
-      d: "#",
-      image: map,
-      color: false,
-    },
-    // {name:'Reviews', d:RouteEnum.MANAGE_COMPANIES},
-    { name: "Covid 19", d: "#", image: message, color: false },
-    { name: "Get Technical Help", d: "#", image: messages },
+    // {
+    //   name: "Application Settings",
+    //   d: "#",
+    //   image: map,
+    //   color: false,
+    // },
+    // // {name:'Reviews', d:RouteEnum.MANAGE_COMPANIES},
+    // { name: "Covid 19", d: "#", image: message, color: false },
+    // { name: "Get Technical Help", d: "#", image: messages },
     // {name:'Support', d:RouteEnum.SUPPORT}
   ]);
  
