@@ -198,13 +198,13 @@ export default function ListOfMedicines() {
   const [meds, setMeds] = React.useState([null]);
   const [formData, setFormdata] = React.useState({
     
-    providerName: "string",
-    providerCredentials: "string",
-    degree: "string",
+    providerName: "",
+    providerCredentials: "",
+    degree: "",
     expiryDate: "2023-01-15T08:15:00.505Z",
-    deaNumber: "string",
+    deaNumber: "",
     deaNumberExpiryDate: "2023-01-15T08:15:00.505Z",
-    deaxNumber: "string",
+    deaxNumber: "",
     noOfPatients: 0,
   });
 
@@ -276,6 +276,8 @@ export default function ListOfMedicines() {
     });
 
     getRidersUnderCompanyR();
+
+
     // try {
     //   const data = await createInventoryMuation({ data: formData }).unwrap();
     //   // TODO extra login
@@ -409,6 +411,18 @@ console.log(formData)
   };
 
   const handleClose = () => {
+
+    setFormdata({
+    
+    providerName: "",
+    providerCredentials: "",
+    degree: "",
+    expiryDate: "",
+    deaNumber: "",
+    deaNumberExpiryDate: "",
+    deaxNumber: "",
+    noOfPatients: 0,
+  })
     setOpen(false);
   };
 

@@ -224,8 +224,8 @@ export default function ListOfMedicines() {
     patientAddress: "",
     dob: "2023-01-15T11:25:14.757Z",
     gender: "",
-    ssn: "string",
-    driversLicenseNo: "string",
+    ssn: "",
+    driversLicenseNo: "",
     insuranceNumber: "",
   });
 
@@ -357,6 +357,7 @@ export default function ListOfMedicines() {
   };
 
   const editItem = async (data) => {
+
     handleClickOpen();
     setIsUpdate(true)
 
@@ -608,6 +609,7 @@ export default function ListOfMedicines() {
               margin="normal"
               fullWidth
               placeholder="patient Name"
+              label="patient Name"
             />
             <TextField
               value={formData.patientAddress}
@@ -617,6 +619,7 @@ export default function ListOfMedicines() {
               margin="normal"
               fullWidth
               placeholder="patient Address"
+              label="patient Address"
             />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 mt-2">
@@ -637,6 +640,7 @@ export default function ListOfMedicines() {
               required
               fullWidth
               placeholder="Gender"
+              label="Gender"
               name="gender"
               value={formData.gender}
             />
@@ -669,6 +673,7 @@ export default function ListOfMedicines() {
               //   type="number"
               fullWidth
               placeholder="insurance Number"
+              label="insurance Number"
               name="insuranceNumber"
             />
           </>
@@ -676,8 +681,11 @@ export default function ListOfMedicines() {
         <DialogActions className="flex gap-2">
           <Button onClick={handleClose}>Cancel</Button>
           <div>
-{         !isUpdate?   <Button onClick={ridersUnderCompanyR}>Add</Button>
-           : <Button onClick={upDate}>Update</Button>}
+            {!isUpdate ? (
+              <Button onClick={ridersUnderCompanyR}>Add</Button>
+            ) : (
+              <Button onClick={upDate}>Update</Button>
+            )}
           </div>
         </DialogActions>
       </Dialog>
