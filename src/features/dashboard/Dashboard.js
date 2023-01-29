@@ -121,9 +121,9 @@ function Signup(props) {
               variant="contained"
               endIcon={<ExpandMoreIcon />}
             >
-              <Typography className="text-black" variant="h6">
+              {/* <Typography className="text-black" variant="h6">
                 Download Report
-              </Typography>
+              </Typography> */}
             </Button>
           </div>
         </div>

@@ -52,7 +52,8 @@ export default function PermanentDrawerLeft() {
     },
     {
       name: "Inventory",
-      d: RouteEnum.MANAGE_COMPANIES,
+      d: '#',
+      // d: RouteEnum.MANAGE_COMPANIES,
       image: companies,
       color: false,
     },
