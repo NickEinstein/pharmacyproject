@@ -15,9 +15,18 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import moment from "moment";
+import LocalPrintshopIcon from "@mui/icons-material/LocalPrintshop";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-
+import {
+  Page,
+  Text,
+  View,
+  Document,
+  StyleSheet,
+  PDFViewer,
+  PDFDownloadLink,
+} from "@react-pdf/renderer";
 import Slide from "@mui/material/Slide";
 import { visuallyHidden } from "@mui/utils";
 import {
@@ -39,13 +48,15 @@ import UserApi from "apis/UserApi";
 import { useSnackbar } from "notistack";
 // import { LoadingButton } from "@mui/lab";
 
-function createData(name, calories, fat, carbs, protein) {
+function createData(name, patient, diagnosis,details, prescription, protein, volumePrescribed) {
   return {
     name,
-    calories,
-    fat,
-    carbs,
+    patient,
+    diagnosis,
+    details,
+    prescription,
     protein,
+    volumePrescribed
   };
 }
 
@@ -89,25 +100,32 @@ const headCells = [
     label: "SSN",
   },
   {
-    id: "calories",
+    id: "patient",
     numeric: false,
     disablePadding: false,
     label: "Patient",
   },
   {
-    id: "fat",
+    id: "diagnosis",
     numeric: false,
     disablePadding: false,
     label: "Diagnosis",
   },
 
   {
-    id: "carbs",
+    id: "details",
+    numeric: false,
+    disablePadding: false,
+    label: "Details",
+  },
+
+  {
+    id: "prescription",
     numeric: false,
     disablePadding: false,
     label: "Prescription",
   },
- 
+
   {
     id: "protein",
     numeric: true,
@@ -178,9 +196,37 @@ EnhancedTableHead.propTypes = {
   rowCount: PropTypes.number.isRequired,
 };
 
+const styles = StyleSheet.create({
+  page: {
+    flexDirection: "row",
+    backgroundColor: "white",
+  },
+  section: {
+    margin: 10,
+    padding: 10,
+    flexGrow: 1,
+  },
+  text: {
+    margin: 5,
+    fontSize: 10,
+    fontWeight: "bold",
+  },
+
+  textMain: {
+    margin: 5,
+    fontWeight: "bold",
+  },
+  title: {
+    fontSize: 16,
+    textAlign: "center",
+    margin: 10,
+    // fontFamily: "Oswald",
+  },
+});
+
 export default function ListOfMedicines() {
   const [order, setOrder] = React.useState("asc");
-  const [orderBy, setOrderBy] = React.useState("calories");
+  const [orderBy, setOrderBy] = React.useState("patient");
   const [selected, setSelected] = React.useState([]);
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
@@ -190,9 +236,8 @@ export default function ListOfMedicines() {
   const [patients, setpatients] = React.useState([null]);
   const [prescribers, setPrescribers] = React.useState([null]);
   const [prescriptions, setPrescriptions] = React.useState([null]);
-  const [age, setAge] = React.useState("");
+  const [openPrint, setOpenPrint] = React.useState("");
 
- 
   const [formData, setFormdata] = React.useState({
     patientId: 0,
     details: "string",
@@ -205,38 +250,51 @@ export default function ListOfMedicines() {
     volumeDispensed: "string",
   });
 
+  const [printData, setPrintData] = React.useState({
+    Clinicname: "",
+    Date: "",
+    Patientname: "",
+    Medicationname: "",
+    instructions: "",
+    QuantityPrescribed: "",
+    PrescriberName: "",
+    warning: `Medication should only be taken for the person whom it was prescribed to
+`,
+  });
+
   const rows = prescriptions?.map((e) =>
     createData(
       e?.ssn,
       e?.patientId,
       e?.diagnosis,
+      e?.details,
       e?.inventoryId,
-      e?.id
+      e?.id,
+      e?.volumePrescribed
     )
   );
 
   console.log(rows);
   console.log(prescriptions);
-  
 
   React.useEffect(() => {
     getPrescribers();
-    getPatients()
-    getMedicatons()
-    getPrescription()
+    getPatients();
+    getMedicatons();
+    getPrescription();
   }, []);
 
-   const handleChange = (e) => {
+  const handleChange = (e) => {
     console.log(e.target.value);
     setFormdata({
-          ...formData,
-          [e.target.name]: e.target.value,
-        });
-   };
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
 
   const onChange = (e, name) => {
-console.log(e.target.name)
-console.log(e.target.value);
+    console.log(e.target.name);
+    console.log(e.target.value);
 
     if (name) {
       console.log(name);
@@ -282,7 +340,7 @@ console.log(e.target.value);
     UserApi.useCreateInventoryMutation();
 
   const ridersUnderCompanyR = async (companyId) => {
-    console.log(formData)
+    console.log(formData);
     const res = await post({
       endpoint: `prescription/prescribe`,
       body: { ...formData },
@@ -313,7 +371,7 @@ console.log(e.target.value);
       // auth: true,
     });
 
-    console.log(res.data.data)
+    console.log(res.data.data);
     // try {
     //   const data = await createInventoryMuation({ data: formData }).unwrap();
     //   // TODO extra login
@@ -348,59 +406,89 @@ console.log(e.target.value);
     // return res.data.data.length;
   };
 
-   const getPrescription = async (companyId) => {
-     const res = await get({
-       endpoint: `prescription/get-prescriptions`,
-    //    body: { ...formData },
-       // auth: true,
-     });
-     // try {
-     //   const data = await createInventoryMuation({ data: formData }).unwrap();
-     //   // TODO extra login
-     //   // redirect()
-     //   enqueueSnackbar("Logged in successful", { variant: "success" });
-     // } catch (error) {
-     //   enqueueSnackbar(error?.data?.message, "Failed to login", {
-     //     variant: "error",
-     //   });
-     // }
+  const getPrescription = async (companyId) => {
+    const res = await get({
+      endpoint: `prescription/get-prescriptions`,
+      //    body: { ...formData },
+      // auth: true,
+    });
+    // try {
+    //   const data = await createInventoryMuation({ data: formData }).unwrap();
+    //   // TODO extra login
+    //   // redirect()
+    //   enqueueSnackbar("Logged in successful", { variant: "success" });
+    // } catch (error) {
+    //   enqueueSnackbar(error?.data?.message, "Failed to login", {
+    //     variant: "error",
+    //   });
+    // }
     //  console.Console.log(res.data.data)
-     setPrescriptions(res.data.data);
-     // return res.data.data.length;
-   };
+    setPrescriptions(res.data.data);
+    // return res.data.data.length;
+  };
 
-   const getPatients = async (companyId) => {
-     const res = await get({
-       endpoint: `patient/get-patients`,
-       // auth: true,
-     });
-     // try {
-     //   const data = await createInventoryMuation({ data: formData }).unwrap();
-     //   // TODO extra login
-     //   // redirect()
-     //   enqueueSnackbar("Logged in successful", { variant: "success" });
-     // } catch (error) {
-     //   enqueueSnackbar(error?.data?.message, "Failed to login", {
-     //     variant: "error",
-     //   });
-     // }
-     setpatients(res.data.data);
-     // return res.data.data.length;
-   };
+  const getPatients = async (companyId) => {
+    const res = await get({
+      endpoint: `patient/get-patients`,
+      // auth: true,
+    });
+    // try {
+    //   const data = await createInventoryMuation({ data: formData }).unwrap();
+    //   // TODO extra login
+    //   // redirect()
+    //   enqueueSnackbar("Logged in successful", { variant: "success" });
+    // } catch (error) {
+    //   enqueueSnackbar(error?.data?.message, "Failed to login", {
+    //     variant: "error",
+    //   });
+    // }
+    setpatients(res.data.data);
+    // return res.data.data.length;
+  };
 
-   function getName(id) {
-     let name = patients?.find((e) => e?.id == id);
-     console.log(name);
+  function getName(id) {
+    let name = patients?.find((e) => e?.id == id);
+    console.log(name);
 
-     return name?.patientName;
-   }
+    return name?.patientName;
+  }
 
-    function getPrescribedDrugs(id) {
-      let name = meds?.find((e) => e?.id == id);
-      console.log(name);
+  function getPrescribedDrugs(id) {
+    let name = meds?.find((e) => e?.id == id);
+    console.log(name);
 
-      return name?.csName;
-    }
+    return name?.csName;
+  }
+
+  const printItem = (data) => {
+    setPrintData({
+      ...printData,
+
+      Clinicname: "Great Heights",
+      Date: moment(new Date).format("ll"),
+      Patientname: getName(data.patient),
+      Medicationname: getPrescribedDrugs(data.prescription),
+      instructions: data.details,
+      diagnosis:data.diagnosis,
+      details:data.details,
+      QuantityPrescribed: data.volumePrescribed,
+      PrescriberName: "Doctor Sam",
+      warning: `Medication should only be taken for the person whom it was prescribed to
+`,
+    });
+
+    // Clinic name
+    // Date
+    // Patient name
+    // Medication name and instructions
+    // Quantity prescribed
+    // Prescriber’s name
+    // And warning:
+    // Medication should only be taken for the person whom it was prescribed to
+
+    console.log(data);
+    setOpenPrint(true);
+  };
 
   const deleteItem = async (id) => {
     const res = await del({
@@ -476,7 +564,6 @@ console.log(e.target.value);
             <Typography variant="h4" className="font-bold">
               Prescriptions
             </Typography>
-           
           </div>
           <div>
             <Button
@@ -549,18 +636,21 @@ console.log(e.target.value);
                       >
                         {row.name}
                       </TableCell>
+                      <TableCell align="left">{getName(row.patient)}</TableCell>
+                      <TableCell align="left">{row.diagnosis}</TableCell>
+                      <TableCell align="left">{row.details}</TableCell>
                       <TableCell align="left">
-                        {getName(row.calories)}
-                      </TableCell>
-                      <TableCell align="left">{row.fat}</TableCell>
-                      <TableCell align="left">
-                        {getPrescribedDrugs(row.carbs)}
+                        {getPrescribedDrugs(row.prescription)}
                       </TableCell>
 
                       <TableCell align="right">
                         <DeleteIcon
                           className="cursor-pointer"
                           onClick={() => deleteItem(row.protein)}
+                        />
+                        <LocalPrintshopIcon
+                          className="cursor-pointer"
+                          onClick={() => printItem(row)}
                         />
                       </TableCell>
                     </TableRow>
@@ -695,6 +785,7 @@ console.log(e.target.value);
             margin="normal"
             fullWidth
             placeholder="volumePrescribed"
+            label="Amount Prescribed"
             name="volumePrescribed"
           />
           <>
@@ -707,6 +798,7 @@ console.log(e.target.value);
                 margin="normal"
                 fullWidth
                 placeholder="ssn"
+                label="SSN"
                 name="ssn"
               />
               <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -731,6 +823,7 @@ console.log(e.target.value);
                 margin="normal"
                 fullWidth
                 placeholder="volumeDispensed"
+                label="Amount Dispensed"
                 name="volumeDispensed"
               />
             </div>
@@ -739,6 +832,114 @@ console.log(e.target.value);
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>
           <Button onClick={ridersUnderCompanyR}>Add</Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog
+        open={openPrint}
+        // sx={{ width: "2000px", border: "2px solid red" }}
+        maxWidth="lg"
+        // fullWidth={true}
+        // sx={{width:"2000px", border:'2px solid red'}}
+        // TransitionComponent={Transition}
+      >
+        <DialogTitle>Medicine Label</DialogTitle>
+        <DialogContent sx={{ width: "500px" }}>
+          <PDFViewer style={{ width: "500px", height: "500px" }}>
+            <Document>
+              <Page size="A4" orientation="landscape" style={styles.page}>
+                <View style={styles.section}>
+                  <Text style={styles.title}>Great Heights Medical Center</Text>
+
+                  <Text style={styles.textMain}>
+                    Clinicname: {printData.Clinicname}
+                  </Text>
+                  <Text style={styles.textMain}>Date: {printData.Date}</Text>
+                  <Text style={styles.textMain}>
+                    Patient name: {printData.Patientname}
+                  </Text>
+
+                  <Text style={styles.textMain}>
+                    Medication name: {printData.Medicationname}
+                  </Text>
+                  <Text style={styles.textMain}>
+                    diagnosis: {printData.diagnosis}
+                  </Text>
+                  <Text style={styles.textMain}>
+                    instructions: {printData.instructions}
+                  </Text>
+                  <Text style={styles.textMain}>
+                    Quantity Prescribed: {printData.QuantityPrescribed}
+                  </Text>
+                  <Text style={styles.textMain}>
+                    Prescriber Name: {printData.PrescriberName}
+                  </Text>
+                  <Text style={styles.textMain}>
+                    warning: {printData.warning}
+                  </Text>
+                </View>
+              </Page>
+            </Document>
+          </PDFViewer>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => {
+              setOpenPrint(false);
+            }}
+          >
+            Cancel
+          </Button>
+          <Button>
+            {
+              <PDFDownloadLink
+                document={
+                  <Document>
+                    <Page size="A6" orientation="landscape" style={styles.page}>
+                      <View style={styles.section}>
+                        <Text style={styles.title}>
+                          Great Heights Medical Center
+                        </Text>
+
+                        <Text style={styles.text}>
+                          Clinicname: {printData.Clinicname}
+                        </Text>
+                        <Text style={styles.text}>Date: {printData.Date}</Text>
+                        <Text style={styles.text}>
+                          Patient name: {printData.Patientname}
+                        </Text>
+
+                        <Text style={styles.text}>
+                          Medication name: {printData.Medicationname}
+                        </Text>
+                        <Text style={styles.text}>
+                          diagnosis: {printData.diagnosis}
+                        </Text>
+                        <Text style={styles.text}>
+                          instructions: {printData.instructions}
+                        </Text>
+
+                        <Text style={styles.text}>
+                          Quantity Prescribed: {printData.QuantityPrescribed}
+                        </Text>
+                        <Text style={styles.text}>
+                          Prescriber Name: {printData.PrescriberName}
+                        </Text>
+                        <Text style={styles.text}>
+                          warning: {printData.warning}
+                        </Text>
+                      </View>
+                    </Page>
+                  </Document>
+                }
+                fileName="somename.pdf"
+              >
+                {({ blob, url, loading, error }) =>
+                  loading ? "Loading document..." : "Download now!"
+                }
+              </PDFDownloadLink>
+            }
+          </Button>
         </DialogActions>
       </Dialog>
     </Box>

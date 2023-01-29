@@ -36,14 +36,15 @@ import UserApi from "apis/UserApi";
 import { useSnackbar } from "notistack";
 // import { LoadingButton } from "@mui/lab";
 
-function createData(name, calories, fat, carbs, vitamins, protein) {
+function createData(name, degree, deaNumber, liscenceNumber, deaNumberExpiryDate, licenseNumberExpiryDate,id) {
   return {
     name,
-    calories,
-    fat,
-    carbs,
-    vitamins,
-    protein,
+    degree,
+    deaNumber,
+    liscenceNumber,
+    deaNumberExpiryDate,
+    licenseNumberExpiryDate,
+    id
   };
 }
 
@@ -87,32 +88,40 @@ const headCells = [
     label: "Provider Name",
   },
   {
-    id: "calories",
+    id: "degree",
     numeric: false,
     disablePadding: false,
     label: "Degree",
   },
   {
-    id: "fat",
+    id: "deaNumber",
     numeric: false,
     disablePadding: false,
     label: "DEA Number",
   },
 
   {
-    id: "vitamins",
+    id: "deaNumberExpiryDate",
     numeric: false,
     disablePadding: false,
     label: "DEA Expiry Date",
   },
   {
-    id: "carbs",
+    id: "liscenceNumber",
     numeric: false,
     disablePadding: false,
     label: "Liscence Number",
   },
+
   {
-    id: "protein",
+    id: "licenseNumberExpiryDate",
+    numeric: false,
+    disablePadding: false,
+    label: "Liscence Expiry Date",
+  },
+
+  {
+    id: "Action",
     numeric: true,
     disablePadding: false,
     label: "Action",
@@ -183,12 +192,12 @@ EnhancedTableHead.propTypes = {
 
 export default function ListOfMedicines() {
   const [order, setOrder] = React.useState("asc");
-  const [orderBy, setOrderBy] = React.useState("calories");
+  const [orderBy, setOrderBy] = React.useState("degree");
   const [selected, setSelected] = React.useState([]);
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
   const [rowsPerPage, setRowsPerPage] = React.useState(5);
-  const [isUpdate, setIsUpdate] = React.useState([null]);
+  const [isUpdate, setIsUpdate] = React.useState(false);
   const [value, setValue] = React.useState(null);
   const [meds, setMeds] = React.useState([null]);
   const [formData, setFormdata] = React.useState({
@@ -209,7 +218,8 @@ export default function ListOfMedicines() {
       e?.deaNumber,
       e?.licenseNumber,
       e?.deaNumberExpiryDate,
-      e?.licenseNumberExpiryDate
+      e?.licenseNumberExpiryDate,
+      e?.id
     )
   );
 
@@ -355,6 +365,18 @@ export default function ListOfMedicines() {
 
   const handleClickOpen = () => {
     setOpen(true);
+    setIsUpdate(false)
+
+   setFormdata({
+      providerName: "",
+      providerCredentials: "",
+      degree: "",
+      expiryDate: null,
+      deaNumber: "",
+      deaNumberExpiryDate: null,
+      licenseNumber: "",
+      licenseNumberExpiryDate: null,
+    });
   };
 
   const handleClose = () => {
@@ -366,21 +388,24 @@ export default function ListOfMedicines() {
 
      setFormdata({
        ...formData,
+       id: data.id,
        providerName: data.name,
        providerCredentials: data.title,
-       degree: data.calories,
-       expiryDate: "2023-01-15T08:15:00.505Z",
-       deaNumber: data.fat,
-       deaNumberExpiryDate: "2023-01-15T08:15:00.505Z",
-       deaxNumber: "string",
-       noOfPatients: 0,
+       degree: data.degree,
+       expiryDate: data?.expiryDate,
+       deaNumber: data.deaNumber,
+       deaNumberExpiryDate: data?.deaNumberExpiryDate,
+       licenseNumber: data?.liscenceNumber,
+       licenseNumberExpiryDate: data.licenseNumberExpiryDate,
      });
+
+  
      console.log(data);
    };
 
    const update = async (companyId) => {
      const res = await put({
-       endpoint: `Dispenser/update-dispenser`,
+       endpoint: `Prescriber/update-prescriber`,
        body: { ...formData },
        // auth: true,
      });
@@ -493,16 +518,20 @@ export default function ListOfMedicines() {
                       >
                         {row.name}
                       </TableCell>
-                      <TableCell align="left">{row.calories}</TableCell>
-                      <TableCell align="left">{row.fat}</TableCell>
-                      <TableCell align="left">{row.carbs}</TableCell>
+                      <TableCell align="left">{row.degree}</TableCell>
+                      <TableCell align="left">{row.deaNumber}</TableCell>
                       <TableCell align="left">
-                        {moment(row.vitamins).format("ll")}
+                        {moment(row.deaNumberExpiryDate).format("ll")}
+                      </TableCell>
+                      <TableCell align="left">{row.liscenceNumber}</TableCell>
+
+                      <TableCell align="left">
+                        {moment(row.licenseNumberExpiryDate).format("ll")}
                       </TableCell>
                       <TableCell align="right">
                         <DeleteIcon
                           className="cursor-pointer"
-                          onClick={() => deleteItem(row.protein)}
+                          onClick={() => deleteItem(row.id)}
                         />
                         <BorderColorIcon
                           className="cursor-pointer"
@@ -575,23 +604,26 @@ export default function ListOfMedicines() {
             <TextField
               onChange={onChange}
               name="providerName"
+              label="provider Name"
               required
               margin="normal"
               value={formData.providerName}
               fullWidth
               placeholder="Provider Name"
             />
-            <TextField
+            {/* <TextField
               onChange={onChange}
+              label="Provider Credentials"
               name="providerCredentials"
               required
               margin="normal"
               value={formData.providerCredentials}
               fullWidth
               placeholder="Provider Credentials"
-            />
+            /> */}
           </div>
           <TextField
+            label="Degree"
             onChange={onChange}
             required
             margin="normal"
@@ -609,6 +641,7 @@ export default function ListOfMedicines() {
                 //   type="number"
                 margin="normal"
                 fullWidth
+                label="DEA Number"
                 placeholder="DEA Number"
                 name="deaNumber"
                 value={formData.deaNumber}
@@ -631,11 +664,12 @@ export default function ListOfMedicines() {
               <TextField
                 onChange={onChange}
                 required
-                type="number"
                 margin="normal"
+                label="Liscence Number"
                 fullWidth
                 placeholder="Liscence Number"
                 name="licenseNumber"
+                value={formData.licenseNumber}
               />
 
               <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -644,7 +678,7 @@ export default function ListOfMedicines() {
                   // name="expirationDate"
                   label="Liscence expiry date "
                   value={formData.expiryDate}
-                  onChange={(e) => onChange(e, "expiryDate")}
+                  onChange={(e) => onChange(e, "licenseNumberExpiryDate")}
                   renderInput={(params) => <TextField {...params} />}
                 />
               </LocalizationProvider>

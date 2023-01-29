@@ -359,6 +359,7 @@ export default function ListOfMedicines() {
     // return res.data.data?.length;
   };
   const upDate = async (companyId) => {
+    console.log(formData)
     const res = await put({
       endpoint: `patient/update-patient`,
       body: { ...formData },
@@ -394,6 +395,7 @@ export default function ListOfMedicines() {
 
     setFormdata({
       ...formData,
+      id:data.action,
       csName: data.name,
       deaSchedule: data.deaSchedule,
       expirationDate: data.expiryDate,

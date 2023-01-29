@@ -36,14 +36,14 @@ import UserApi from "apis/UserApi";
 import { useSnackbar } from "notistack";
 // import { LoadingButton } from "@mui/lab";
 
-function createData(name,title, calories, fat, carbs,vitamins, protein) {
+function createData(name,title, degree, deaNumber,deaExpiryDate, id) {
   return {
     name,
-    calories,
-    fat,
+    degree,
+    deaNumber,
     title,
-    vitamins,
-    protein,
+    deaExpiryDate,
+    id,
   };
 }
 
@@ -93,13 +93,13 @@ const headCells = [
     label: "Dispenser Title",
   },
   {
-    id: "calories",
+    id: "degree",
     numeric: false,
     disablePadding: false,
     label: "Degree",
   },
   {
-    id: "fat",
+    id: "deaNumber",
     numeric: false,
     disablePadding: false,
     label: "DEA Number",
@@ -111,13 +111,13 @@ const headCells = [
   //   label: "No. Of Patients",
   // },
   {
-    id: "vitamins",
+    id: "deaExpiryDate",
     numeric: false,
     disablePadding: false,
     label: "DEA Expiry Date",
   },
   {
-    id: "protein",
+    id: "id",
     numeric: true,
     disablePadding: false,
     label: "Action",
@@ -188,7 +188,7 @@ EnhancedTableHead.propTypes = {
 
 export default function ListOfMedicines() {
   const [order, setOrder] = React.useState("asc");
-  const [orderBy, setOrderBy] = React.useState("calories");
+  const [orderBy, setOrderBy] = React.useState("degree");
   const [selected, setSelected] = React.useState([]);
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
@@ -213,6 +213,8 @@ export default function ListOfMedicines() {
   const rows = meds?.map((e) =>
     createData(e?.providerName,e?.providerCredentials, e?.degree, e?.deaNumber,e?.deaNumberExpiryDate,  e?.id)
   );
+
+  console.log(rows)
 
   React.useEffect(() => {
     getRidersUnderCompanyR();
@@ -289,6 +291,8 @@ export default function ListOfMedicines() {
   };
 
   const update = async (companyId) => {
+console.log(formData)
+
     const res = await put({
       endpoint: `Dispenser/update-dispenser`,
       body: { ...formData },
@@ -317,11 +321,12 @@ export default function ListOfMedicines() {
 
     setFormdata({
       ...formData,
+      id:data.id,
       providerName: data.name,
       providerCredentials: data.title,
-      degree: data.calories,
+      degree: data.degree,
       expiryDate: "2023-01-15T08:15:00.505Z",
-      deaNumber: data.fat,
+      deaNumber: data.deaNumber,
       deaNumberExpiryDate: "2023-01-15T08:15:00.505Z",
       deaxNumber: "string",
       noOfPatients: 0,
@@ -507,16 +512,16 @@ export default function ListOfMedicines() {
                       >
                         {row?.title}
                       </TableCell>
-                      <TableCell align="left">{row.calories}</TableCell>
-                      <TableCell align="left">{row.fat}</TableCell>
+                      <TableCell align="left">{row.degree}</TableCell>
+                      <TableCell align="left">{row.deaNumber}</TableCell>
                       {/* <TableCell align="left">{row.carbs}</TableCell> */}
                       <TableCell align="left">
-                        {moment(row.vitamins).format("ll")}
+                        {moment(row.deaExpiryDate).format("ll")}
                       </TableCell>
                       <TableCell align="right">
                         <DeleteIcon
                           className="cursor-pointer"
-                          onClick={() => deleteItem(row.protein)}
+                          onClick={() => deleteItem(row.id)}
                         />
                         <BorderColorIcon
                           className="cursor-pointer"
@@ -594,6 +599,7 @@ export default function ListOfMedicines() {
               margin="normal"
               fullWidth
               placeholder="Dispenser Name"
+              label="Dispenser Name"
             />
             <TextField
               onChange={onChange}
@@ -603,6 +609,7 @@ export default function ListOfMedicines() {
               margin="normal"
               fullWidth
               placeholder="Dispenser Title"
+              label="Dispenser Title"
             />
           </div>
           <TextField
@@ -611,6 +618,7 @@ export default function ListOfMedicines() {
             margin="normal"
             fullWidth
             placeholder="Degree"
+            label="Degree"
             value={formData.degree}
             name="degree"
           />
@@ -624,6 +632,7 @@ export default function ListOfMedicines() {
               margin="normal"
               fullWidth
               placeholder="DEA Number"
+              label="DEA Number"
               name="deaNumber"
             />
             {/* <TextField
