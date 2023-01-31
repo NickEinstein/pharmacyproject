@@ -108,7 +108,7 @@ const headCells = [
     disablePadding: false,
     label: "Gender",
   },
- {
+  {
     id: "address",
     numeric2: true,
     disablePadding: false,
@@ -120,7 +120,6 @@ const headCells = [
     disablePadding: false,
     label: "Date Of Birth",
   },
- 
 
   // {
   //   id: "driversLicenseNo",
@@ -227,6 +226,12 @@ export default function ListOfMedicines() {
     ssn: "",
     driversLicenseNo: "",
     insuranceNumber: "",
+
+    address1: "",
+    address2: "",
+    city: "",
+    state: "",
+    zipCode: "",
   });
 
   const rows = meds?.map((e) =>
@@ -240,7 +245,7 @@ export default function ListOfMedicines() {
 
       e?.driversLicenseNo,
       e?.insuranceNumber,
-      e?.id,
+      e?.id
     )
   );
 
@@ -254,7 +259,7 @@ export default function ListOfMedicines() {
         ...formData,
         [name]: e,
       });
-    } 
+    }
     setFormdata({
       ...formData,
       [e.target.name]: e.target.value,
@@ -305,27 +310,27 @@ export default function ListOfMedicines() {
     // return res.data.data.length;
   };
 
-   const upDate = async (companyId) => {
-     const res = await put({
-       endpoint: `patient/update-patient`,
-       body: { ...formData },
-       // auth: true,
-     });
+  const upDate = async (companyId) => {
+    const res = await put({
+      endpoint: `patient/update-patient`,
+      body: { ...formData },
+      // auth: true,
+    });
 
-     getRidersUnderCompanyR();
-     // try {
-     //   const data = await createInventoryMuation({ data: formData }).unwrap();
-     //   // TODO extra login
-     //   // redirect()
-     //   enqueueSnackbar("Logged in successful", { variant: "success" });
-     // } catch (error) {
-     //   enqueueSnackbar(error?.data?.message, "Failed to login", {
-     //     variant: "error",
-     //   });
-     // }
-     // console.log(res.data.data);
-     // return res.data.data.length;
-   };
+    getRidersUnderCompanyR();
+    // try {
+    //   const data = await createInventoryMuation({ data: formData }).unwrap();
+    //   // TODO extra login
+    //   // redirect()
+    //   enqueueSnackbar("Logged in successful", { variant: "success" });
+    // } catch (error) {
+    //   enqueueSnackbar(error?.data?.message, "Failed to login", {
+    //     variant: "error",
+    //   });
+    // }
+    // console.log(res.data.data);
+    // return res.data.data.length;
+  };
 
   const getRidersUnderCompanyR = async (companyId) => {
     const res = await get({
@@ -357,22 +362,20 @@ export default function ListOfMedicines() {
   };
 
   const editItem = async (data) => {
-
     handleClickOpen();
-    setIsUpdate(true)
+    setIsUpdate(true);
 
-   setFormdata({
-     ...formData,
-     id: data.id,
-     patientName: data.name,
-     patientAddress: data.address,
-     dob: data.dob,
-     gender: data.gender,
+    setFormdata({
+      ...formData,
+      id: data.id,
+      patientName: data.name,
+      patientAddress: data.address,
+      dob: data.dob,
+      gender: data.gender,
 
-     insuranceNumber: data.insuranceNumber,
-   });
-    console.log(data)
-   
+      insuranceNumber: data.insuranceNumber,
+    });
+    console.log(data);
   };
 
   const handleClick = (event, name) => {
@@ -423,7 +426,6 @@ export default function ListOfMedicines() {
   const handleClose = () => {
     setOpen(!open);
     setIsUpdate(false);
-
   };
 
   const Transition = React.forwardRef(function Transition(props, ref) {
@@ -600,7 +602,7 @@ export default function ListOfMedicines() {
             This will only take a few minutes
           </Typography>
           {/* <Typography variant="h5" className="text-center">{formik?.values?.email_address}</Typography> */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4">
+          <div className="">
             <TextField
               onChange={onChange}
               name="patientName"
@@ -622,6 +624,55 @@ export default function ListOfMedicines() {
               label="patient Address"
             />
           </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4">
+            <TextField
+              onChange={onChange}
+              name="address1"
+              value={formData.address1}
+              required
+              margin="normal"
+              fullWidth
+              label="Address 1"
+            />
+            <TextField
+              value={formData.address2}
+              onChange={onChange}
+              name="address2"
+              required
+              margin="normal"
+              fullWidth
+              label="Address 2"
+            />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4">
+            <TextField
+              onChange={onChange}
+              name="city"
+              value={formData.city}
+              required
+              margin="normal"
+              fullWidth
+              label="City"
+            />
+            <TextField
+              value={formData.state}
+              onChange={onChange}
+              name="state"
+              required
+              margin="normal"
+              fullWidth
+              label="State"
+            />
+          </div>
+          <TextField
+            value={formData.zipCode}
+            onChange={onChange}
+            name="zipCode"
+            required
+            margin="normal"
+            fullWidth
+            label="Zip Code"
+          />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 mt-2">
             <LocalizationProvider dateAdapter={AdapterDateFns}>
               <DatePicker
