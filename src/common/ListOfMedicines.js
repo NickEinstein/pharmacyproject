@@ -28,6 +28,10 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
   TextField,
 } from "@mui/material";
 import { Add } from "@mui/icons-material";
@@ -214,6 +218,7 @@ export default function ListOfMedicines() {
   const [value, setValue] = React.useState(null);
   const [isUpdate, setIsUpdate] = React.useState([null]);
   const [meds, setMeds] = React.useState([null]);
+  const [medsGroup, setMedsGroup] = React.useState([null]);
   const [formData, setFormdata] = React.useState({
     // id: 0,
     csName: "",
@@ -229,6 +234,7 @@ export default function ListOfMedicines() {
     noOfBottlesReceived: 0,
     amountDispensed: 0,
     availableAmount: 0,
+    grpId: null,
   });
 
   //  csName: "string",
@@ -270,7 +276,18 @@ export default function ListOfMedicines() {
     getRidersUnderCompanyR();
   }, []);
 
+   const handleChange = (e) => {
+     console.log(e.target.value);
+     setFormdata({
+       ...formData,
+       [e.target.name]: e.target.value,
+     });
+   };
+
   const onChange = (e, name) => {
+    // console.log(e?.target?.value);
+    // console.log(e);
+    // console.log(name);
     if (name) {
       console.log(name);
       console.log(e);
@@ -342,9 +359,15 @@ export default function ListOfMedicines() {
   const getRidersUnderCompanyR = async (companyId) => {
     const res = await get({
       endpoint: `Inventory/get-inventories`,
-      body: { ...formData },
       // auth: true,
     });
+
+     const resGrp = await get({
+       endpoint: `Inventory/get-medicine-groups`,
+       // auth: true,
+     });
+
+     console.log(resGrp);
     // try {
     //   const data = await createInventoryMuation({ data: formData }).unwrap();
     //   // TODO extra login
@@ -356,6 +379,7 @@ export default function ListOfMedicines() {
     //   });
     // }
     setMeds(res.data.data);
+    setMedsGroup(resGrp.data.data);
     // return res.data.data?.length;
   };
   const upDate = async (companyId) => {
@@ -366,6 +390,10 @@ export default function ListOfMedicines() {
       // auth: true,
     });
 
+    const getMedicineGroup = (id)=>{
+      const temp = medsGroup.find((e)=>e.id == id)
+      console.log(temp)
+    }
     getRidersUnderCompanyR();
     // try {
     //   const data = await createInventoryMuation({ data: formData }).unwrap();
@@ -382,7 +410,7 @@ export default function ListOfMedicines() {
   };
   const deleteItem = async (id) => {
     const res = await del({
-      endpoint: `prescriber/delete-prescriber?Id=${id}`,
+      endpoint: `Inventory/delete-inventory?Id=${id}`,
       //  body: { ...formData },
       // auth: true,
     });
@@ -472,6 +500,7 @@ export default function ListOfMedicines() {
       noOfBottlesReceived: 0,
       amountDispensed: 0,
       availableAmount: 0,
+      grpId:null
     });
   };
 
@@ -646,16 +675,42 @@ export default function ListOfMedicines() {
 
           {/* <Typography variant="h5" className="text-center">{formik?.values?.email_address}</Typography> */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4">
-            <TextField
-              onChange={onChange}
-              name="csName"
-              required
-              margin="normal"
-              value={formData.csName}
-              fullWidth
-              placeholder="Name"
-              label="Name"
-            />
+            <FormControl>
+              <TextField
+                onChange={onChange}
+                name="csName"
+                required
+                margin="normal"
+                value={formData.csName}
+                fullWidth
+                placeholder="Name"
+                label="Name"
+              />
+            </FormControl>
+            <Box sx={{ minWidth: 120, marginTop: "1rem" }}>
+              <FormControl fullWidth>
+                <InputLabel id="demo-simple-select-label">
+                  CS Medicine Group
+                </InputLabel>
+                <Select
+                  //   labelId="demo-simple-select-label"
+                  // id="demo-simple-select"
+                  name="grpId"
+                  // value={age}
+                  label=" CS Medicine Group"
+                  onChange={handleChange}
+                >
+                  {medsGroup?.map((e) => (
+                    <MenuItem value={e?.id}>{e?.name}</MenuItem>
+                  ))}
+                  {/* <MenuItem value={20}>Twenty</MenuItem>
+                <MenuItem value={30}>Thirty</MenuItem> */}
+                </Select>
+              </FormControl>
+            </Box>
+          </div>
+
+          <>
             <TextField
               onChange={onChange}
               name="deaSchedule"
@@ -666,9 +721,6 @@ export default function ListOfMedicines() {
               label="DEA Schedule"
               placeholder="DEA Schedule"
             />
-          </div>
-
-          <>
             <TextField
               onChange={onChange}
               requiredtype="number"
@@ -705,7 +757,7 @@ export default function ListOfMedicines() {
                 <DatePicker
                   inputFormat="MM/dd/yyyy"
                   className="my-4"
-                  name=""
+                  name="dateAddedToInventory"
                   onChange={(e) => onChange(e, "dateAddedToInventory")}
                   label="Date Added to Inventory"
                   value={formData.dateAddedToInventory}
@@ -718,7 +770,7 @@ export default function ListOfMedicines() {
                 <DatePicker
                   inputFormat="MM/dd/yyyy"
                   className="my-4"
-                  name=""
+                  name="dateReceived"
                   onChange={(e) => onChange(e, "dateReceived")}
                   label="Date Received"
                   value={formData.dateReceived}
@@ -730,7 +782,7 @@ export default function ListOfMedicines() {
                 <DatePicker
                   inputFormat="MM/dd/yyyy"
                   // inputFormat="mm-dd-yy"
-                  // name="expirationDate"
+                  name="expirationDate"
                   label="Expiration Date"
                   views={["day", "month", "year"]}
                   value={formData.expirationDate}

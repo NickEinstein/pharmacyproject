@@ -190,6 +190,7 @@ export default function ListOfMedicines() {
   //   noOfBottlesReceived: 0,
 
   const rows = meds?.map((e) => createData(e?.name, e?.id));
+  console.log(rows)
 
   function getName(id) {
     let name = meds?.find((e) => e?.id == id);
@@ -273,7 +274,7 @@ export default function ListOfMedicines() {
 
   const getRidersUnderCompanyR = async (companyId) => {
     const res = await get({
-      endpoint: `Inventory/get-groups`,
+      endpoint: `Inventory/get-medicine-groups`,
       body: { ...formData },
       // auth: true,
     });
@@ -314,7 +315,7 @@ export default function ListOfMedicines() {
   };
   const deleteItem = async (id) => {
     const res = await del({
-      endpoint: `prescriber/delete-prescriber?Id=${id}`,
+      endpoint: `Inventory/delete-group?Id=${id}`,
       //  body: { ...formData },
       // auth: true,
     });
@@ -328,14 +329,9 @@ export default function ListOfMedicines() {
 
     setFormdata({
       ...formData,
-      id: data.action,
+      id: data.id,
       name: data.name,
-      deaSchedule: data.deaSchedule,
-      expirationDate: data.expiryDate,
-      dateReceived: data.dateReceived,
-      dateAddedToInventory: data.dateAddedToInventory,
-      noOfBottlesOrdered: data.noOfBottlesOrdered,
-      noOfBottlesReceived: data.stockQty,
+      
     });
     console.log(data);
   };
@@ -384,6 +380,11 @@ export default function ListOfMedicines() {
   const handleClickOpen = () => {
     setOpen(true);
     setIsUpdate(false)
+     setFormdata({
+       ...formData,
+       id:'',
+       name: '',
+     });
   };
 
   const handleClose = () => {
@@ -487,7 +488,7 @@ export default function ListOfMedicines() {
                       <TableCell align="right">
                         <DeleteIcon
                           className="cursor-pointer"
-                          onClick={() => deleteItem(row.action)}
+                          onClick={() => deleteItem(row.id)}
                         />
                         <BorderColorIcon
                           className="cursor-pointer"
@@ -570,7 +571,7 @@ export default function ListOfMedicines() {
           </div>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
+          <Button className="mr-4" onClick={handleClose}>Cancel</Button>
           <div>
             {!isUpdate ? (
               <Button onClick={ridersUnderCompanyR}>Add</Button>
